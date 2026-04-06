@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { Search, Bell, LogOut, Settings, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface HeaderProps {
   onLogout?: () => void;
@@ -47,11 +48,11 @@ const mockNotifications: Notification[] = [
   },
 ];
 
-// Mock user data - replace with actual useAuth hook when AuthContext is available
-const mockUser: UserInfo = {
+// Default user (will be overridden by useAuth in the component)
+const defaultUser: UserInfo = {
   name: 'Usuário',
-  email: 'usuario@techlicense.com.br',
-  plan: 'Plano Premium',
+  email: '',
+  plan: 'Plano Gratuito',
 };
 
 const getBreadcrumbLabel = (pathname: string): string => {
@@ -74,9 +75,16 @@ const getBreadcrumbLabel = (pathname: string): string => {
 
 export default function Header({ onLogout }: HeaderProps) {
   const pathname = usePathname();
+  const { user: authUser } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const mockUser: UserInfo = {
+    name: authUser?.name || defaultUser.name,
+    email: authUser?.email || defaultUser.email,
+    plan: authUser?.plan === 'enterprise' ? 'Empresarial' : authUser?.plan === 'pro' ? 'Profissional' : defaultUser.plan,
+  };
 
   const unreadCount = useMemo(
     () => mockNotifications.filter((n) => n.unread).length,
