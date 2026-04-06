@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://techlicense-chatbot-api.techlicensebr.workers.dev';
 const V1_BASE_URL = `${API_BASE_URL}/v1`;
