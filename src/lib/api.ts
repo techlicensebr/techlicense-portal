@@ -166,7 +166,7 @@ class APIClient {
     return localStorage.getItem(TOKEN_KEY);
   }
 
-  private setToken(token: string): void {
+  setToken(token: string): void {
     if (typeof window === 'undefined') return;
     localStorage.setItem(TOKEN_KEY, token);
   }
@@ -801,6 +801,102 @@ class APIClient {
   async getModelPricing(modelId: string) {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/models/${modelId}/pricing`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // ============ ADMIN ENDPOINTS ============
+
+  async getAdminDashboard() {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/admin/dashboard`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getAdminTenants(params?: { page?: number; per_page?: number; search?: string; status?: string }) {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/admin/tenants`, { params });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getAdminTenant(id: string) {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/admin/tenants/${id}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async createAdminTenant(data: { name: string; slug?: string; plan: string; owner_email: string; owner_name: string; owner_password: string }) {
+    try {
+      const response = await this.client.post(`${V1_BASE_URL}/admin/tenants`, data);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async updateAdminTenant(id: string, data: Record<string, unknown>) {
+    try {
+      const response = await this.client.patch(`${V1_BASE_URL}/admin/tenants/${id}`, data);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async deleteAdminTenant(id: string) {
+    try {
+      const response = await this.client.delete(`${V1_BASE_URL}/admin/tenants/${id}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getAdminPlans() {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/admin/plans`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getAdminUsage(params?: { period?: string }) {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/admin/usage`, { params });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getAdminSubscriptions(params?: { page?: number; per_page?: number }) {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/admin/subscriptions`, { params });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async register(data: { name: string; email: string; password: string; company_name: string; plan_slug?: string }) {
+    try {
+      const response = await this.client.post('/v1/auth/register', data);
+      const { token } = response.data;
+      if (token) {
+        this.setToken(token);
+      }
       return response.data;
     } catch (error) {
       throw this.handleError(error);
