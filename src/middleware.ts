@@ -1,41 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const protectedRoutes = [
-  '/bots',
-  '/conversations',
-  '/knowledge',
-  '/analytics',
-  '/api-keys',
-  '/webhooks',
-  '/settings',
-  '/contacts',
-  '/billing',
-  '/channels',
-];
-
-const publicRoutes = ['/login', '/verify-magic-link'];
+const publicRoutes = ['/login', '/verify-magic-link', '/registrar', '/recuperar-senha'];
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Verificar se é uma rota pública
+  // Ignorar arquivos estáticos
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/favicon') ||
+    pathname.startsWith('/logo') ||
+    pathname.startsWith('/icon') ||
+    pathname.endsWith('.png') ||
+    pathname.endsWith('.ico') ||
+    pathname.endsWith('.svg')
+  ) {
+    return NextResponse.next();
+  }
+
+  // Rotas públicas — acesso sem token
   if (publicRoutes.some(route => pathname.startsWith(route))) {
     return NextResponse.next();
   }
 
-  // Verificar se é uma rota protegida
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  // Todas as outras rotas precisam de autenticação
+  const token = request.cookies.get('tl_token')?.value;
 
-  if (isProtectedRoute) {
-    // Verificar token nos cookies
-    const token = request.cookies.get('tl_token')?.value;
-
-    if (!token) {
-      // Redirecionar para login
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
+  if (!token) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
@@ -43,13 +37,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Fazer match com todas as paths de requisição exceto:
-     * - _next/static (arquivos estáticos)
-     * - _next/image (otimização de imagens)
-     * - favicon.ico (ícone favorito)
-     * - public folder
-     */
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!_next/static|_next/image|favicon.ico|logo.png|icon.png).*)',
   ],
 };
