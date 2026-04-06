@@ -153,7 +153,7 @@ export default function Sidebar() {
             className="flex items-center gap-3 mb-8 hover:opacity-90 transition-opacity group"
             onClick={() => setIsOpen(false)}
           >
-            <img src="/logo.png" alt="TechLicense" className="h-10 w-auto max-w-[200px]" />
+            <img src="/logo.png" alt="TechLicense" className="h-12 w-auto" />
           </Link>
 
           {/* Navigation */}
