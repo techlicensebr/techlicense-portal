@@ -2,101 +2,71 @@
 
 export const runtime = 'edge';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, AlertCircle } from 'lucide-react';
+import { useApi, useApiMutation } from '@/hooks/useApi';
+import { apiClient, BotData } from '@/lib/api';
 
-interface BotConfig {
-  id: string;
-  name: string;
-  description: string;
-  status: 'active' | 'inactive';
-  model: string;
-  temperature: number;
-  maxTokens: number;
-  systemPrompt: string;
-  guardrails: string[];
-  channels: string[];
-}
+type TabType = 'geral' | 'modelo' | 'prompt' | 'protecoes' | 'canais';
 
 export default function BotDetailPage() {
   const params = useParams();
   const botId = params.id as string;
 
-  const [activeTab, setActiveTab] = useState<'general' | 'model' | 'prompt' | 'guardrails' | 'channels'>('general');
-  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('geral');
   const [saved, setSaved] = useState(false);
-
-  const [config, setConfig] = useState<BotConfig>({
-    id: botId,
-    name: 'Support Agent',
-    description: 'Customer support chatbot for technical issues',
-    status: 'active',
-    model: 'gpt-4-turbo',
-    temperature: 0.7,
-    maxTokens: 2048,
-    systemPrompt: 'You are a helpful customer support agent. Be polite, professional, and always try to resolve the customer\'s issue.',
-    guardrails: ['No inappropriate language', 'No sensitive data sharing', 'No off-topic discussions'],
-    channels: ['web', 'whatsapp', 'telegram'],
-  });
-
-  const [newGuardrail, setNewGuardrail] = useState('');
+  const [newProtection, setNewProtection] = useState('');
   const [newChannel, setNewChannel] = useState('');
 
+  const { data: bot, loading: botLoading, error: botError } = useApi(
+    () => apiClient.getBot(botId),
+    { autoFetch: true }
+  );
+
+  const [config, setConfig] = useState<Partial<BotData>>({});
+
+  useEffect(() => {
+    if (bot) {
+      setConfig(bot);
+    }
+  }, [bot]);
+
+  const { mutate: saveBotMutate, loading: saveLoading } = useApiMutation(
+    (data: Partial<BotData>) => apiClient.updateBot(botId, data),
+    {
+      onSuccess: () => {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      },
+    }
+  );
+
   const handleSave = async () => {
-    setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } finally {
-      setLoading(false);
+      await saveBotMutate(config);
+    } catch (err) {
+      console.error('Erro ao salvar bot:', err);
     }
   };
 
-  const handleAddGuardrail = () => {
-    if (newGuardrail.trim()) {
-      setConfig({
-        ...config,
-        guardrails: [...config.guardrails, newGuardrail],
-      });
-      setNewGuardrail('');
-    }
-  };
-
-  const handleRemoveGuardrail = (index: number) => {
-    setConfig({
-      ...config,
-      guardrails: config.guardrails.filter((_, i) => i !== index),
-    });
-  };
-
-  const handleAddChannel = () => {
-    if (newChannel.trim() && !config.channels.includes(newChannel)) {
-      setConfig({
-        ...config,
-        channels: [...config.channels, newChannel],
-      });
-      setNewChannel('');
-    }
-  };
-
-  const handleRemoveChannel = (channel: string) => {
-    setConfig({
-      ...config,
-      channels: config.channels.filter((c) => c !== channel),
-    });
-  };
-
-  const tabs = [
-    { id: 'general' as const, label: 'General' },
-    { id: 'model' as const, label: 'AI Model' },
-    { id: 'prompt' as const, label: 'System Prompt' },
-    { id: 'guardrails' as const, label: 'Guardrails' },
-    { id: 'channels' as const, label: 'Channels' },
+  const tabs: { id: TabType; label: string }[] = [
+    { id: 'geral', label: 'Geral' },
+    { id: 'modelo', label: 'Modelo de IA' },
+    { id: 'prompt', label: 'Prompt do Sistema' },
+    { id: 'protecoes', label: 'Proteções' },
+    { id: 'canais', label: 'Canais' },
   ];
+
+  if (botLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded w-1/4 animate-pulse" />
+        <div className="card h-96 bg-slate-200 dark:bg-slate-700 animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fadeIn max-w-4xl">
@@ -104,28 +74,38 @@ export default function BotDetailPage() {
       <div className="flex items-center gap-2">
         <Link href="/bots" className="btn-ghost flex items-center gap-2">
           <ArrowLeft size={18} />
-          Back
+          Voltar para Bots
         </Link>
       </div>
 
       {/* Page header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">{config.name}</h1>
-        <p className="text-slate-600 mt-2">{config.description}</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{config.name || 'Carregando...'}</h1>
+        <p className="text-slate-600 dark:text-slate-400 mt-2">{config.description}</p>
       </div>
 
+      {/* Error state */}
+      {botError && (
+        <div className="card bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-3">
+          <AlertCircle className="text-red-600 dark:text-red-400" size={20} />
+          <p className="text-sm text-red-700 dark:text-red-300">
+            Erro ao carregar bot: {botError.message}
+          </p>
+        </div>
+      )}
+
       {/* Card */}
-      <div className="card">
+      <div className="card dark:bg-slate-800">
         {/* Tabs */}
-        <div className="flex gap-2 border-b border-slate-200 mb-6 overflow-x-auto">
+        <div className="flex gap-2 border-b border-slate-200 dark:border-slate-700 mb-6 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-3 font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
+                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {tab.label}
@@ -136,51 +116,51 @@ export default function BotDetailPage() {
         {/* Tab content */}
         <div className="space-y-6">
           {/* General tab */}
-          {activeTab === 'general' && (
+          {activeTab === 'geral' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Bot Name</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Nome do Bot</label>
                 <input
                   type="text"
-                  value={config.name}
+                  value={config.name || ''}
                   onChange={(e) => setConfig({ ...config, name: e.target.value })}
-                  className="input-field"
+                  className="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Descrição</label>
                 <textarea
-                  value={config.description}
+                  value={config.description || ''}
                   onChange={(e) => setConfig({ ...config, description: e.target.value })}
-                  className="input-field"
+                  className="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                   rows={3}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Status</label>
                 <select
-                  value={config.status}
+                  value={config.status || 'active'}
                   onChange={(e) => setConfig({ ...config, status: e.target.value as 'active' | 'inactive' })}
-                  className="input-field"
+                  className="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                 >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="active">Ativo</option>
+                  <option value="inactive">Inativo</option>
                 </select>
               </div>
             </div>
           )}
 
           {/* Model tab */}
-          {activeTab === 'model' && (
+          {activeTab === 'modelo' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Model</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Modelo</label>
                 <select
-                  value={config.model}
+                  value={config.model || 'gpt-4-turbo'}
                   onChange={(e) => setConfig({ ...config, model: e.target.value })}
-                  className="input-field"
+                  className="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                 >
                   <option value="gpt-4-turbo">GPT-4 Turbo</option>
                   <option value="gpt-4">GPT-4</option>
@@ -191,30 +171,30 @@ export default function BotDetailPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Temperature</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Temperatura</label>
                 <input
                   type="range"
                   min="0"
                   max="2"
                   step="0.1"
-                  value={config.temperature}
+                  value={config.temperature || 0.7}
                   onChange={(e) => setConfig({ ...config, temperature: parseFloat(e.target.value) })}
                   className="w-full"
                 />
-                <p className="text-xs text-slate-500 mt-2">
-                  Current: {config.temperature} (Lower = more deterministic, Higher = more creative)
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  Valor: {(config.temperature || 0.7).toFixed(1)} (Menor = mais determinístico, Maior = mais criativo)
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Max Tokens</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Max Tokens</label>
                 <input
                   type="number"
-                  value={config.maxTokens}
-                  onChange={(e) => setConfig({ ...config, maxTokens: parseInt(e.target.value) })}
-                  className="input-field"
+                  value={config.max_tokens || 2048}
+                  onChange={(e) => setConfig({ ...config, max_tokens: parseInt(e.target.value) })}
+                  className="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                 />
-                <p className="text-xs text-slate-500 mt-2">Maximum tokens per response</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Máximo de tokens por resposta</p>
               </div>
             </div>
           )}
@@ -223,84 +203,86 @@ export default function BotDetailPage() {
           {activeTab === 'prompt' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">System Prompt</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Prompt do Sistema</label>
                 <textarea
-                  value={config.systemPrompt}
-                  onChange={(e) => setConfig({ ...config, systemPrompt: e.target.value })}
-                  className="input-field font-mono text-sm"
+                  value={(config as any).system_prompt || ''}
+                  onChange={(e) => setConfig({ ...config, system_prompt: e.target.value } as Partial<BotData>)}
+                  className="input-field font-mono text-sm dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                   rows={8}
-                  placeholder="Enter the system prompt for this bot..."
+                  placeholder="Digite o prompt do sistema para este bot..."
                 />
-                <p className="text-xs text-slate-500 mt-2">This defines the behavior and personality of your bot.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  Isso define o comportamento e a personalidade do seu bot. ({((config as any).system_prompt || '').length} caracteres)
+                </p>
               </div>
 
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Tip:</strong> Use clear, specific instructions to guide the bot's responses. Include context about your business and specific guidelines for interactions.
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-300">
+                  <strong>Dica:</strong> Use instruções claras e específicas para guiar as respostas do bot. Inclua contexto sobre seu negócio e diretrizes específicas para interações.
                 </p>
               </div>
             </div>
           )}
 
-          {/* Guardrails tab */}
-          {activeTab === 'guardrails' && (
+          {/* Protections tab */}
+          {activeTab === 'protecoes' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Add Guardrail</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Adicionar Proteção</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    value={newGuardrail}
-                    onChange={(e) => setNewGuardrail(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleAddGuardrail()}
-                    placeholder="E.g., No medical advice"
-                    className="input-field flex-1"
+                    value={newProtection}
+                    onChange={(e) => setNewProtection(e.target.value)}
+                    placeholder="Ex: Nenhum aconselhamento médico"
+                    className="input-field flex-1 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                   />
-                  <button onClick={handleAddGuardrail} className="btn-primary flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      if (newProtection.trim()) {
+                        setNewProtection('');
+                      }
+                    }}
+                    className="btn-primary flex items-center gap-2"
+                  >
                     <Plus size={18} />
-                    Add
+                    Adicionar
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Active Guardrails</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Proteções Ativas</label>
                 <div className="space-y-2">
-                  {config.guardrails.length === 0 ? (
-                    <p className="text-slate-500 text-sm">No guardrails added yet</p>
-                  ) : (
-                    config.guardrails.map((guardrail, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg"
-                      >
-                        <span className="text-sm">{guardrail}</span>
-                        <button
-                          onClick={() => handleRemoveGuardrail(index)}
-                          className="p-1 hover:bg-red-100 rounded transition-colors"
-                        >
-                          <Trash2 size={16} className="text-red-600" />
-                        </button>
-                      </div>
-                    ))
-                  )}
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg">
+                    <input type="checkbox" className="w-4 h-4" defaultChecked />
+                    <span className="text-sm text-slate-900 dark:text-white">Nenhuma linguagem inadequada</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg">
+                    <input type="checkbox" className="w-4 h-4" defaultChecked />
+                    <span className="text-sm text-slate-900 dark:text-white">Nenhum compartilhamento de dados sensíveis</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg">
+                    <input type="checkbox" className="w-4 h-4" defaultChecked />
+                    <span className="text-sm text-slate-900 dark:text-white">Nenhuma discussão fora do tópico</span>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {/* Channels tab */}
-          {activeTab === 'channels' && (
+          {activeTab === 'canais' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Add Channel</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Adicionar Canal</label>
                 <div className="flex gap-2">
                   <select
                     value={newChannel}
                     onChange={(e) => setNewChannel(e.target.value)}
-                    className="input-field flex-1"
+                    className="input-field flex-1 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                   >
-                    <option value="">Select a channel...</option>
+                    <option value="">Selecione um canal...</option>
                     <option value="web">Web</option>
                     <option value="whatsapp">WhatsApp</option>
                     <option value="telegram">Telegram</option>
@@ -308,34 +290,34 @@ export default function BotDetailPage() {
                     <option value="discord">Discord</option>
                     <option value="messenger">Messenger</option>
                   </select>
-                  <button onClick={handleAddChannel} className="btn-primary flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      if (newChannel.trim()) {
+                        setNewChannel('');
+                      }
+                    }}
+                    className="btn-primary flex items-center gap-2"
+                  >
                     <Plus size={18} />
-                    Add
+                    Adicionar
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Enabled Channels</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Canais Habilitados</label>
                 <div className="space-y-2">
-                  {config.channels.length === 0 ? (
-                    <p className="text-slate-500 text-sm">No channels enabled</p>
-                  ) : (
-                    config.channels.map((channel) => (
-                      <div
-                        key={channel}
-                        className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg"
-                      >
-                        <span className="text-sm font-medium capitalize">{channel}</span>
-                        <button
-                          onClick={() => handleRemoveChannel(channel)}
-                          className="p-1 hover:bg-red-100 rounded transition-colors"
-                        >
-                          <Trash2 size={16} className="text-red-600" />
-                        </button>
-                      </div>
-                    ))
-                  )}
+                  {['Web', 'WhatsApp', 'Telegram'].map((channel) => (
+                    <div
+                      key={channel}
+                      className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg"
+                    >
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">{channel}</span>
+                      <button className="p-1 hover:bg-red-100 dark:hover:bg-red-900/50 rounded transition-colors">
+                        <Trash2 size={16} className="text-red-600 dark:text-red-400" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -343,25 +325,25 @@ export default function BotDetailPage() {
         </div>
 
         {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-slate-200 flex justify-end gap-3">
+        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
           <Link href="/bots" className="btn-secondary">
-            Cancel
+            Cancelar
           </Link>
           <button
             onClick={handleSave}
-            disabled={loading}
+            disabled={saveLoading}
             className="btn-primary flex items-center gap-2 disabled:opacity-50"
           >
             <Save size={18} />
-            {loading ? 'Saving...' : 'Save Changes'}
+            {saveLoading ? 'Salvando...' : 'Salvar Alterações'}
           </button>
         </div>
 
         {/* Success message */}
         {saved && (
-          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-600 rounded-full" />
-            <p className="text-sm text-green-800">Bot configuration saved successfully!</p>
+          <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-600 dark:bg-green-400 rounded-full" />
+            <p className="text-sm text-green-800 dark:text-green-300">Configuração do bot salva com sucesso!</p>
           </div>
         )}
       </div>
