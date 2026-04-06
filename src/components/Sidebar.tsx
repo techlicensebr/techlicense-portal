@@ -19,6 +19,8 @@ import {
   CreditCard,
   LogOut,
   ChevronDown,
+  Shield,
+  Users,
 } from 'lucide-react';
 
 interface NavItem {
@@ -92,6 +94,8 @@ export default function Sidebar() {
   const { user: authUser, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const isAdmin = authUser?.role === 'admin';
 
   const user: UserInfo = {
     name: authUser?.name || 'Usuário',
@@ -174,6 +178,51 @@ export default function Sidebar() {
               </Link>
             ))}
           </nav>
+
+          {/* Admin Section */}
+          {isAdmin && (
+            <div className="mt-8 pt-8 border-t border-[#1a1a1a]">
+              <p className="px-4 text-xs font-semibold text-[#707070] uppercase mb-4">Administração</p>
+              <nav className="space-y-1">
+                <Link
+                  href="/admin"
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                    isActive('/admin')
+                      ? 'bg-[#D4A843]/10 text-[#D4A843] font-medium border-l-4 border-[#D4A843]'
+                      : 'text-[#A0A0A0] hover:bg-[#1a1a1a] hover:text-[#C0C0C0]'
+                  }`}
+                >
+                  <Shield size={20} />
+                  <span className="font-medium">Painel Admin</span>
+                </Link>
+                <Link
+                  href="/admin/clientes"
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                    isActive('/admin/clientes')
+                      ? 'bg-[#D4A843]/10 text-[#D4A843] font-medium border-l-4 border-[#D4A843]'
+                      : 'text-[#A0A0A0] hover:bg-[#1a1a1a] hover:text-[#C0C0C0]'
+                  }`}
+                >
+                  <Users size={20} />
+                  <span className="font-medium">Clientes</span>
+                </Link>
+                <Link
+                  href="/admin/planos"
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                    isActive('/admin/planos')
+                      ? 'bg-[#D4A843]/10 text-[#D4A843] font-medium border-l-4 border-[#D4A843]'
+                      : 'text-[#A0A0A0] hover:bg-[#1a1a1a] hover:text-[#C0C0C0]'
+                  }`}
+                >
+                  <BarChart3 size={20} />
+                  <span className="font-medium">Planos</span>
+                </Link>
+              </nav>
+            </div>
+          )}
         </div>
 
         {/* Footer - User Info */}
