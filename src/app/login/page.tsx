@@ -97,7 +97,7 @@ function LoginForm(): React.ReactElement {
       const errorMessage = err instanceof Error ? err.message : 'Falha ao fazer login. Tente novamente.';
       const authError = errorMessage.toLowerCase();
 
-      if (authError.includes('credenciais') || authError.includes('invalid') || authError.includes('password')) {
+      if (authError.includes('credenciais') || authError.includes('invalid') || authError.includes('password') || authError.includes('401')) {
         setErrors({ general: 'E-mail ou senha incorretos' });
       } else if (authError.includes('não encontrado') || authError.includes('not found')) {
         setErrors({ general: 'Conta não encontrada. Crie uma conta gratuita' });
@@ -106,8 +106,6 @@ function LoginForm(): React.ReactElement {
       } else {
         setErrors({ general: errorMessage });
       }
-    } finally {
-      setLoading(false);
     }
   };
 
