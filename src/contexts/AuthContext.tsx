@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { apiClient } from '@/lib/api';
 
 export interface User {
   id: string;
@@ -8,7 +9,7 @@ export interface User {
   email: string;
   avatar_url?: string;
   role: 'admin' | 'user' | 'viewer';
-  organization_id: string;
+  organization_id?: string;
   plan: 'free' | 'starter' | 'pro' | 'enterprise';
 }
 
@@ -27,23 +28,17 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://techlicense-chatbot-api.techlicensebr.workers.dev';
 const TOKEN_KEY = 'tl_token';
 const USER_KEY = 'tl_user';
 const TOKEN_REFRESH_INTERVAL = 45 * 60 * 1000; // 45 minutos
 
-// Usuário demo para testes (enquanto a API não está pronta)
-const DEMO_USER: User = {
-  id: 'demo-001',
-  name: 'Admin TechLicense',
-  email: 'admin@techlicense.com.br',
-  role: 'admin',
-  organization_id: 'org-techlicense',
-  plan: 'enterprise',
-};
-const DEMO_EMAIL = 'admin@techlicense.com.br';
-const DEMO_PASSWORD = 'admin123';
-const DEMO_TOKEN = 'tl_demo_token_2026';
+function setCookie(token: string) {
+  document.cookie = `tl_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+}
+
+function clearCookie() {
+  document.cookie = 'tl_token=; path=/; max-age=0';
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -51,21 +46,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const isAuthenticated = !!token && !!user;
 
-  // Recuperar token e usuário do localStorage
+  // Recuperar token e usuário do localStorage na montagem
   useEffect(() => {
     const storedToken = localStorage.getItem(TOKEN_KEY);
     const storedUser = localStorage.getItem(USER_KEY);
 
     if (storedToken) {
       setToken(storedToken);
-      document.cookie = `tl_token=${storedToken}; path=/; max-age=86400; SameSite=Lax`;
+      setCookie(storedToken);
     }
 
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Erro ao analisar usuário armazenado:', error);
+      } catch {
         localStorage.removeItem(USER_KEY);
       }
     }
@@ -73,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  // Atualizar token automaticamente
+  // Auto-refresh do token
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -82,42 +76,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, TOKEN_REFRESH_INTERVAL);
 
     return () => clearInterval(intervalId);
-  }, [isAuthenticated, token]);
+  }, [isAuthenticated]);
+
+  const saveAuth = useCallback((newToken: string, userData: User) => {
+    localStorage.setItem(TOKEN_KEY, newToken);
+    localStorage.setItem(USER_KEY, JSON.stringify(userData));
+    setCookie(newToken);
+    setToken(newToken);
+    setUser(userData);
+  }, []);
+
+  const clearAuth = useCallback(() => {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    clearCookie();
+    setToken(null);
+    setUser(null);
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
     try {
-      // Modo demo — login local para testes
-      if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
-        localStorage.setItem(TOKEN_KEY, DEMO_TOKEN);
-        localStorage.setItem(USER_KEY, JSON.stringify(DEMO_USER));
-        document.cookie = `tl_token=${DEMO_TOKEN}; path=/; max-age=86400; SameSite=Lax`;
-        setToken(DEMO_TOKEN);
-        setUser(DEMO_USER);
-        return;
-      }
+      const data = await apiClient.login(email, password);
 
-      // Login real via API
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Credenciais inválidas' }));
-        throw new Error(error.message || 'Falha ao fazer login');
-      }
-
-      const data = await response.json();
-      const { token: newToken, user: userData } = data;
-
-      if (newToken && userData) {
-        localStorage.setItem(TOKEN_KEY, newToken);
-        localStorage.setItem(USER_KEY, JSON.stringify(userData));
-        document.cookie = `tl_token=${newToken}; path=/; max-age=86400; SameSite=Lax`;
-        setToken(newToken);
-        setUser(userData);
+      if (data.token && data.user) {
+        saveAuth(data.token, data.user);
+      } else {
+        throw new Error('Resposta inválida do servidor');
       }
     } catch (error) {
       console.error('Erro de login:', error);
@@ -125,23 +110,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [saveAuth]);
 
   const loginMagicLink = useCallback(async (email: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/auth/magic-link`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Falha ao enviar link mágico');
-      }
-
-      // Retornar sucesso - o usuário receberá email com o link
+      await apiClient.loginMagicLink(email);
     } catch (error) {
       console.error('Erro ao enviar link mágico:', error);
       throw error;
@@ -153,25 +127,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginGoogle = useCallback(async (googleToken: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/auth/google`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: googleToken }),
-      });
+      const data = await apiClient.loginGoogle(googleToken);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Falha ao fazer login com Google');
-      }
-
-      const data = await response.json();
-      const { token: newToken, user: userData } = data;
-
-      if (newToken && userData) {
-        localStorage.setItem(TOKEN_KEY, newToken);
-        localStorage.setItem(USER_KEY, JSON.stringify(userData));
-        setToken(newToken);
-        setUser(userData);
+      if (data.token && data.user) {
+        saveAuth(data.token, data.user);
       }
     } catch (error) {
       console.error('Erro de login com Google:', error);
@@ -179,74 +138,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [saveAuth]);
 
   const logout = useCallback(async () => {
     setLoading(true);
     try {
-      // Tentar notificar o servidor sobre o logout
-      if (token) {
-        await fetch(`${API_URL}/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        }).catch(() => {
-          // Ignorar erros ao fazer logout no servidor
-        });
-      }
-
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-      document.cookie = 'tl_token=; path=/; max-age=0';
-      setToken(null);
-      setUser(null);
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error);
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-      document.cookie = 'tl_token=; path=/; max-age=0';
-      setToken(null);
-      setUser(null);
+      await apiClient.logout();
+    } catch {
+      // Ignorar erro do servidor no logout
     } finally {
+      clearAuth();
       setLoading(false);
     }
-  }, [token]);
+  }, [clearAuth]);
 
   const refreshToken = useCallback(async () => {
     if (!token) return;
-
-    try {
-      const response = await fetch(`${API_URL}/auth/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        // Token inválido ou expirado - fazer logout
-        if (response.status === 401) {
-          await logout();
-          return;
-        }
-        throw new Error('Falha ao atualizar token');
-      }
-
-      const data = await response.json();
-      const { token: newToken } = data;
-
-      if (newToken) {
-        localStorage.setItem(TOKEN_KEY, newToken);
-        setToken(newToken);
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar token:', error);
-      await logout();
-    }
-  }, [token, logout]);
+    // TODO: implementar refresh real quando endpoint estiver pronto
+    // Por enquanto o token dura 24h e não precisa de refresh
+  }, [token]);
 
   const value: AuthContextType = {
     user,

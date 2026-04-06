@@ -138,6 +138,12 @@ class APIClient {
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
+          // Token demo — não tenta refresh, apenas rejeita o erro
+          const currentToken = this.getToken();
+          if (currentToken?.startsWith('tl_demo')) {
+            return Promise.reject(error);
+          }
+
           try {
             const newToken = await this.refreshAccessToken();
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
@@ -168,6 +174,8 @@ class APIClient {
   private clearToken(): void {
     if (typeof window === 'undefined') return;
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem('tl_user');
+    document.cookie = 'tl_token=; path=/; max-age=0';
   }
 
   private async refreshAccessToken(): Promise<string> {
@@ -182,7 +190,7 @@ class APIClient {
         if (!token) throw new Error('Token não disponível');
 
         const response = await this.client.post(
-          '/auth/refresh',
+          '/v1/auth/refresh',
           {},
           {
             headers: {
@@ -229,7 +237,7 @@ class APIClient {
 
   async login(email: string, password: string) {
     try {
-      const response = await this.client.post('/auth/login', { email, password });
+      const response = await this.client.post('/v1/auth/login', { email, password });
       const { token } = response.data;
       if (token) {
         this.setToken(token);
@@ -242,7 +250,7 @@ class APIClient {
 
   async loginMagicLink(email: string) {
     try {
-      const response = await this.client.post('/auth/magic-link', { email });
+      const response = await this.client.post('/v1/auth/magic-link', { email });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -251,7 +259,7 @@ class APIClient {
 
   async verifyMagicLink(token: string) {
     try {
-      const response = await this.client.post('/auth/verify-magic-link', { token });
+      const response = await this.client.post('/v1/auth/verify-magic-link', { token });
       const { token: newToken } = response.data;
       if (newToken) {
         this.setToken(newToken);
@@ -264,7 +272,7 @@ class APIClient {
 
   async loginGoogle(googleToken: string) {
     try {
-      const response = await this.client.post('/auth/google', { token: googleToken });
+      const response = await this.client.post('/v1/auth/google', { token: googleToken });
       const { token } = response.data;
       if (token) {
         this.setToken(token);
@@ -277,7 +285,7 @@ class APIClient {
 
   async getCurrentUser() {
     try {
-      const response = await this.client.get('/auth/me');
+      const response = await this.client.get('/v1/auth/me');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -286,7 +294,7 @@ class APIClient {
 
   async logout() {
     try {
-      await this.client.post('/auth/logout');
+      await this.client.post('/v1/auth/logout');
       this.clearToken();
     } catch (error) {
       this.clearToken();

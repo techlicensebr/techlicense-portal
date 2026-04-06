@@ -393,13 +393,6 @@ function LoginForm(): React.ReactElement {
                 </p>
               </div>
 
-              {/* Demo credentials */}
-              <div className="mt-6 p-4 bg-[#D4A843]/10 border border-[#D4A843]/30 rounded-xl">
-                <p className="text-[#D4A843] text-xs font-semibold mb-2">Acesso Demo:</p>
-                <p className="text-[#A0A0A0] text-xs">E-mail: <span className="text-white font-mono">admin@techlicense.com.br</span></p>
-                <p className="text-[#A0A0A0] text-xs">Senha: <span className="text-white font-mono">admin123</span></p>
-              </div>
-
               {/* Security footer */}
               <div className="mt-4 text-center text-xs text-[#505050]">
                 <p>Protegido por TechLicense Security</p>
