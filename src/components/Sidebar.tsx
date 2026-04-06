@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard,
   MessageSquare,
@@ -88,13 +89,13 @@ interface UserInfo {
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { user: authUser, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  // Mock user data - replace with actual useAuth hook when AuthContext is available
   const user: UserInfo = {
-    name: 'Usuário',
-    email: 'usuario@techlicense.com.br',
+    name: authUser?.name || 'Usuário',
+    email: authUser?.email || '',
   };
 
   const isActive = (href: string) => {
@@ -104,8 +105,8 @@ export default function Sidebar() {
     return pathname.startsWith(href);
   };
 
-  const handleLogout = () => {
-    // Call logout logic here
+  const handleLogout = async () => {
+    await logout();
     router.push('/login');
   };
 
@@ -152,7 +153,7 @@ export default function Sidebar() {
             className="flex items-center gap-3 mb-8 hover:opacity-90 transition-opacity group"
             onClick={() => setIsOpen(false)}
           >
-            <img src="/logo.png" alt="TechLicense" className="h-8" />
+            <img src="/logo.png" alt="TechLicense" className="h-10 w-auto max-w-[200px]" />
           </Link>
 
           {/* Navigation */}

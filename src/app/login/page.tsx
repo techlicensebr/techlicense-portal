@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, Loader, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -14,7 +14,17 @@ interface FormErrors {
 }
 
 export default function LoginPage(): React.ReactElement {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center"><Loader className="animate-spin text-[#D4A843]" size={32} /></div>}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm(): React.ReactElement {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
   const { login } = useAuth();
 
   const [email, setEmail] = useState<string>('');
@@ -82,7 +92,7 @@ export default function LoginPage(): React.ReactElement {
         localStorage.removeItem('techlicense_email');
       }
 
-      router.push('/');
+      router.push(redirectTo);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Falha ao fazer login. Tente novamente.';
       const authError = errorMessage.toLowerCase();
@@ -205,7 +215,7 @@ export default function LoginPage(): React.ReactElement {
             <>
               {/* Header */}
               <div className="text-center mb-8">
-                <img src="/logo.png" alt="TechLicense" className="h-14 mx-auto mb-6" />
+                <img src="/logo.png" alt="TechLicense" className="h-20 w-auto mx-auto mb-6" />
                 <h1 className="text-3xl font-bold text-[#C0C0C0]">Entrar na sua conta</h1>
                 <p className="text-[#707070] mt-2">Plataforma de Chatbot IA</p>
               </div>
@@ -383,8 +393,15 @@ export default function LoginPage(): React.ReactElement {
                 </p>
               </div>
 
+              {/* Demo credentials */}
+              <div className="mt-6 p-4 bg-[#D4A843]/10 border border-[#D4A843]/30 rounded-xl">
+                <p className="text-[#D4A843] text-xs font-semibold mb-2">Acesso Demo:</p>
+                <p className="text-[#A0A0A0] text-xs">E-mail: <span className="text-white font-mono">admin@techlicense.com.br</span></p>
+                <p className="text-[#A0A0A0] text-xs">Senha: <span className="text-white font-mono">admin123</span></p>
+              </div>
+
               {/* Security footer */}
-              <div className="mt-6 text-center text-xs text-[#505050]">
+              <div className="mt-4 text-center text-xs text-[#505050]">
                 <p>Protegido por TechLicense Security</p>
               </div>
             </>
