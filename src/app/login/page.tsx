@@ -162,14 +162,14 @@ export default function LoginPage(): React.ReactElement {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-700 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#111111] to-[#0a0a0a] flex items-center justify-center p-4">
       {/* Animated background elements */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+      <div className="absolute top-0 left-0 w-96 h-96 bg-[#D4A843] rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#C0C0C0] rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
 
       <div className="w-full max-w-md relative z-10">
         {/* Main card */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 backdrop-blur-xl bg-opacity-95 dark:bg-opacity-95">
+        <div className="bg-[#111111] rounded-2xl shadow-2xl shadow-black/50 p-8 backdrop-blur-xl border border-[#1a1a1a]">
           {magicLinkSent ? (
             // Magic link sent state
             <div className="text-center space-y-6">
@@ -205,11 +205,9 @@ export default function LoginPage(): React.ReactElement {
             <>
               {/* Header */}
               <div className="text-center mb-8">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center font-bold text-white text-xl mx-auto mb-4 shadow-lg">
-                  TL
-                </div>
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Entrar na sua conta</h1>
-                <p className="text-slate-600 dark:text-slate-400 mt-2">TechLicense Chatbot IA</p>
+                <img src="/logo.svg" alt="TechLicense" className="h-12 mx-auto mb-6" />
+                <h1 className="text-3xl font-bold text-[#C0C0C0]">Entrar na sua conta</h1>
+                <p className="text-[#707070] mt-2">Plataforma de Chatbot IA</p>
               </div>
 
               {/* Error message */}
@@ -226,11 +224,11 @@ export default function LoginPage(): React.ReactElement {
               >
                 {/* Email input */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  <label htmlFor="email" className="block text-sm font-semibold text-[#A0A0A0] mb-2">
                     E-mail
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
+                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#606060]" size={18} />
                     <input
                       id="email"
                       type="email"
@@ -244,9 +242,9 @@ export default function LoginPage(): React.ReactElement {
                       placeholder="seu.email@exemplo.com"
                       className={`w-full pl-12 pr-4 py-3 rounded-lg border-2 transition-colors ${
                         errors.email
-                          ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10 focus:outline-none focus:border-red-500'
-                          : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900'
-                      } text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400`}
+                          ? 'border-red-700 bg-red-900/10 focus:outline-none focus:border-red-500'
+                          : 'border-[#2a2a2a] bg-[#0a0a0a] focus:outline-none focus:border-[#D4A843] focus:ring-2 focus:ring-[#D4A843]/20'
+                      } text-white placeholder-[#505050]`}
                       required
                       autoComplete="email"
                     />
@@ -258,18 +256,18 @@ export default function LoginPage(): React.ReactElement {
                 {loginMode === 'password' && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label htmlFor="password" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      <label htmlFor="password" className="text-sm font-semibold text-[#A0A0A0]">
                         Senha
                       </label>
                       <a
                         href="/recuperar-senha"
-                        className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
+                        className="text-xs text-[#D4A843] hover:text-[#E8C860] font-medium transition-colors"
                       >
                         Esqueceu a senha?
                       </a>
                     </div>
                     <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
+                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#606060]" size={18} />
                       <input
                         id="password"
                         type={showPassword ? 'text' : 'password'}
@@ -283,16 +281,16 @@ export default function LoginPage(): React.ReactElement {
                         placeholder="••••••••"
                         className={`w-full pl-12 pr-12 py-3 rounded-lg border-2 transition-colors ${
                           errors.password
-                            ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10 focus:outline-none focus:border-red-500'
-                            : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900'
-                        } text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400`}
+                            ? 'border-red-700 bg-red-900/10 focus:outline-none focus:border-red-500'
+                            : 'border-[#2a2a2a] bg-[#0a0a0a] focus:outline-none focus:border-[#D4A843] focus:ring-2 focus:ring-[#D4A843]/20'
+                        } text-white placeholder-[#505050]`}
                         required
                         autoComplete="current-password"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400 transition-colors"
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#606060] hover:text-[#A0A0A0] transition-colors"
                         tabIndex={-1}
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -310,9 +308,9 @@ export default function LoginPage(): React.ReactElement {
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-600 cursor-pointer"
+                      className="w-4 h-4 rounded border-[#2a2a2a] text-[#D4A843] focus:ring-[#D4A843] bg-[#0a0a0a] cursor-pointer"
                     />
-                    <label htmlFor="remember" className="ml-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                    <label htmlFor="remember" className="ml-2 text-sm text-[#A0A0A0] cursor-pointer">
                       Lembrar de mim
                     </label>
                   </div>
@@ -322,7 +320,7 @@ export default function LoginPage(): React.ReactElement {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-400 text-white font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed mt-6"
+                  className="w-full bg-gradient-to-r from-[#D4A843] to-[#B8860B] hover:from-[#E8C860] hover:to-[#C9982E] disabled:from-[#444] disabled:to-[#333] text-black font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:text-gray-500 mt-6 shadow-lg shadow-[#D4A843]/20"
                 >
                   {loading && <Loader size={18} className="animate-spin" />}
                   {loginMode === 'password' ? 'Entrar' : 'Enviar link mágico'}
@@ -331,9 +329,9 @@ export default function LoginPage(): React.ReactElement {
 
               {/* Divider */}
               <div className="my-6 flex items-center gap-3">
-                <div className="flex-1 border-t border-slate-200 dark:border-slate-700" />
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">OU</span>
-                <div className="flex-1 border-t border-slate-200 dark:border-slate-700" />
+                <div className="flex-1 border-t border-[#2a2a2a]" />
+                <span className="text-xs text-[#606060] font-medium">OU</span>
+                <div className="flex-1 border-t border-[#2a2a2a]" />
               </div>
 
               {/* Google button */}
@@ -341,7 +339,7 @@ export default function LoginPage(): React.ReactElement {
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="w-full px-4 py-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-3 font-semibold text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 border-2 border-[#2a2a2a] rounded-lg hover:bg-[#1a1a1a] transition-colors flex items-center justify-center gap-3 font-semibold text-[#C0C0C0] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -369,24 +367,24 @@ export default function LoginPage(): React.ReactElement {
                 <button
                   type="button"
                   onClick={handleSwitchMode}
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-semibold transition-colors"
+                  className="text-[#D4A843] hover:text-[#E8C860] text-sm font-semibold transition-colors"
                 >
                   {loginMode === 'password' ? 'Entrar com link mágico' : 'Entrar com senha'}
                 </button>
               </div>
 
               {/* Sign up link */}
-              <div className="mt-8 text-center border-t border-slate-200 dark:border-slate-700 pt-6">
-                <p className="text-slate-600 dark:text-slate-400 text-sm">
+              <div className="mt-8 text-center border-t border-[#2a2a2a] pt-6">
+                <p className="text-[#707070] text-sm">
                   Não tem conta?{' '}
-                  <a href="/registrar" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold transition-colors">
+                  <a href="/registrar" className="text-[#D4A843] hover:text-[#E8C860] font-semibold transition-colors">
                     Criar conta gratuita
                   </a>
                 </p>
               </div>
 
               {/* Security footer */}
-              <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
+              <div className="mt-6 text-center text-xs text-[#505050]">
                 <p>Protegido por TechLicense Security</p>
               </div>
             </>
@@ -394,7 +392,7 @@ export default function LoginPage(): React.ReactElement {
         </div>
 
         {/* Footer info */}
-        <p className="mt-6 text-center text-sm text-slate-300 dark:text-slate-500">
+        <p className="mt-6 text-center text-sm text-[#404040]">
           Plataforma segura e criptografada
         </p>
       </div>

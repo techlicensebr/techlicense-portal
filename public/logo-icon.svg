@@ -1,0 +1,46 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="iconGoldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8C860;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#D4A843;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
+    </linearGradient>
+    <filter id="iconShadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Background circle for icon emphasis -->
+  <circle cx="32" cy="32" r="31" fill="none" stroke="#D4A843" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- Shield shape -->
+  <g id="shield-icon" filter="url(#iconShadow)">
+    <!-- Main shield body -->
+    <path d="M 20 18 L 20 35 Q 20 48 32 54 Q 44 48 44 35 L 44 18 Z"
+          fill="url(#iconGoldGradient)" stroke="#9A7C0A" stroke-width="1"/>
+
+    <!-- Padlock arc on top of shield -->
+    <path d="M 24 18 Q 24 10 32 10 Q 40 10 40 18"
+          fill="none" stroke="url(#iconGoldGradient)" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- Padlock keyhole circle -->
+    <circle cx="32" cy="20" r="2.5" fill="none" stroke="#B8860B" stroke-width="1.5" opacity="0.8"/>
+
+    <!-- Inner lock mechanism - vertical shank -->
+    <rect x="30.5" y="24" width="3" height="14" fill="#B8860B" opacity="0.7" rx="1"/>
+
+    <!-- "T" shape integrated into lock design -->
+    <g id="t-icon">
+      <!-- Horizontal bar of T -->
+      <rect x="22" y="26" width="20" height="2.5" fill="#B8860B" opacity="0.6" rx="1"/>
+      <!-- Vertical bar of T (overlaps with lock shank) -->
+      <rect x="30.5" y="28" width="3" height="10" fill="#B8860B" opacity="0.7" rx="1"/>
+    </g>
+
+    <!-- Shield highlight/shine effect -->
+    <ellipse cx="26" cy="30" rx="5" ry="8" fill="#F0D980" opacity="0.5"/>
+
+    <!-- Top shine for 3D effect -->
+    <ellipse cx="32" cy="22" rx="3" ry="2" fill="#FFFACD" opacity="0.7"/>
+  </g>
+</svg>
