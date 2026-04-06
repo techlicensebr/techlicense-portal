@@ -32,6 +32,19 @@ const TOKEN_KEY = 'tl_token';
 const USER_KEY = 'tl_user';
 const TOKEN_REFRESH_INTERVAL = 45 * 60 * 1000; // 45 minutos
 
+// Usuário demo para testes (enquanto a API não está pronta)
+const DEMO_USER: User = {
+  id: 'demo-001',
+  name: 'CARLÃO',
+  email: 'carlosbhlicitall@gmail.com',
+  role: 'admin',
+  organization_id: 'org-techlicense',
+  plan: 'enterprise',
+};
+const DEMO_EMAIL = 'admin@techlicense.com.br';
+const DEMO_PASSWORD = 'admin123';
+const DEMO_TOKEN = 'tl_demo_token_2026';
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -45,6 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (storedToken) {
       setToken(storedToken);
+      // Sincronizar cookie para o middleware
+      document.cookie = `tl_token=${storedToken}; path=/; max-age=86400; SameSite=Lax`;
     }
 
     if (storedUser) {
@@ -73,6 +88,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
     try {
+      // Modo demo — login local para testes
+      if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
+        localStorage.setItem(TOKEN_KEY, DEMO_TOKEN);
+        localStorage.setItem(USER_KEY, JSON.stringify(DEMO_USER));
+        document.cookie = `tl_token=${DEMO_TOKEN}; path=/; max-age=86400; SameSite=Lax`;
+        setToken(DEMO_TOKEN);
+        setUser(DEMO_USER);
+        return;
+      }
+
+      // Login real via API
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({ message: 'Falha ao fazer login' }));
         throw new Error(error.message || 'Falha ao fazer login');
       }
 
@@ -90,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (newToken && userData) {
         localStorage.setItem(TOKEN_KEY, newToken);
         localStorage.setItem(USER_KEY, JSON.stringify(userData));
+        document.cookie = `tl_token=${newToken}; path=/; max-age=86400; SameSite=Lax`;
         setToken(newToken);
         setUser(userData);
       }
@@ -173,13 +200,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
+      document.cookie = 'tl_token=; path=/; max-age=0';
       setToken(null);
       setUser(null);
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
-      // Limpar dados locais mesmo se houver erro
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
+      document.cookie = 'tl_token=; path=/; max-age=0';
       setToken(null);
       setUser(null);
     } finally {
