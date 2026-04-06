@@ -1,40 +1,64 @@
-import React from 'react';
-import type { Metadata } from 'next';
+'use client';
+
+import React, { ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import './globals.css';
 
-export const metadata: Metadata = {
-  title: 'TechLicense Chatbot - Admin Portal',
-  description: 'Manage your AI chatbots with TechLicense',
-  icons: {
-    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect fill="%232563eb" width="32" height="32"/><text x="50%" y="50%" font-size="16" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="central">TL</text></svg>',
-  },
-};
+// Nota: metadata não funciona em Client Components
+// Será necessário usar um layout.tsx em server ou um root layout separado
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
+  const pathname = usePathname();
+
+  // Rotas onde não mostramos Sidebar e Header
+  const isLoginPage = pathname === '/login' || pathname === '/verify-magic-link';
+
   return (
-    <html lang="en">
-      <body>
-        <div className="flex h-screen bg-gray-50">
-          {/* Sidebar */}
-          <Sidebar />
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>TechLicense Portal - Gerenciador de Chatbots IA</title>
+        <meta name="description" content="Gerencie seus chatbots de IA com TechLicense" />
+        <link
+          rel="icon"
+          href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect fill='%232563eb' width='32' height='32'/><text x='50%' y='50%' font-size='16' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central'>TL</text></svg>"
+        />
+      </head>
+      <body className="bg-white dark:bg-slate-950">
+        <ThemeProvider>
+          <AuthProvider>
+            {isLoginPage ? (
+              // Layout simples para páginas de login
+              <>{children}</>
+            ) : (
+              // Layout com sidebar para páginas autenticadas
+              <div className="flex h-screen bg-gray-50 dark:bg-slate-950">
+                {/* Sidebar */}
+                <Sidebar />
 
-          {/* Main content */}
-          <div className="flex-1 flex flex-col lg:ml-0 pt-16 lg:pt-0">
-            {/* Header */}
-            <Header />
+                {/* Main content */}
+                <div className="flex-1 flex flex-col lg:ml-0 pt-16 lg:pt-0">
+                  {/* Header */}
+                  <Header />
 
-            {/* Page content */}
-            <main className="flex-1 overflow-y-auto">
-              <div className="p-6">{children}</div>
-            </main>
-          </div>
-        </div>
+                  {/* Page content */}
+                  <main className="flex-1 overflow-y-auto">
+                    <div className="p-6">{children}</div>
+                  </main>
+                </div>
+              </div>
+            )}
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

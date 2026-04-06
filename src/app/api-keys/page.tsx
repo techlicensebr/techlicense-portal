@@ -1,69 +1,59 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Copy, MoreVertical, Eye, EyeOff, Key, Calendar } from 'lucide-react';
+import {
+  Plus,
+  Copy,
+  MoreVertical,
+  Eye,
+  EyeOff,
+  Key,
+  Calendar,
+} from 'lucide-react';
+import { useApi, useApiMutation } from '@/hooks/useApi';
+import { apiClient, ApiKeyData } from '@/lib/api';
 
-interface ApiKey {
-  id: string;
-  name: string;
-  key: string;
-  maskedKey: string;
-  createdAt: string;
-  lastUsed: string;
-  status: 'active' | 'inactive';
-}
-
-export default function ApiKeysPage() {
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([
-    {
-      id: '1',
-      name: 'Production Key',
-      key: 'tl_live_abc123def456ghi789jkl012mno',
-      maskedKey: 'tl_live_***...jkl012mno',
-      createdAt: '2024-01-15',
-      lastUsed: '2 minutes ago',
-      status: 'active',
-    },
-    {
-      id: '2',
-      name: 'Development Key',
-      key: 'tl_test_xyz987uvw654tsr321qpo098nml',
-      maskedKey: 'tl_test_***...qpo098nml',
-      createdAt: '2024-02-20',
-      lastUsed: '1 hour ago',
-      status: 'active',
-    },
-    {
-      id: '3',
-      name: 'Legacy Key',
-      key: 'tl_live_old123key456string789end',
-      maskedKey: 'tl_live_***...789end',
-      createdAt: '2023-12-10',
-      lastUsed: '7 days ago',
-      status: 'inactive',
-    },
-  ]);
-
+export default function ChavedaAPIPage() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [showNewKeyModal, setShowNewKeyModal] = useState(false);
   const [newKeyName, setNewKeyName] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [visibleKey, setVisibleKey] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
-  const handleCreateKey = () => {
+  // Fetch API keys
+  const { data: keysData, loading: keysLoading, refetch } = useApi(
+    () => apiClient.getApiKeys(),
+    { autoFetch: true }
+  );
+
+  const apiKeys = keysData?.keys || [];
+
+  // Create key mutation
+  const createMutation = useApiMutation<ApiKeyData, string>(
+    (name) => apiClient.createApiKey(name)
+  );
+
+  // Delete key mutation
+  const deleteMutation = useApiMutation<void, string>(
+    (keyId) => apiClient.deleteApiKey(keyId)
+  );
+
+  // Toggle key status mutation
+  const toggleMutation = useApiMutation<ApiKeyData, string>(
+    (keyId) => apiClient.toggleApiKey(keyId)
+  );
+
+  const handleCreateKey = async () => {
     if (newKeyName.trim()) {
-      const newKey: ApiKey = {
-        id: Date.now().toString(),
-        name: newKeyName,
-        key: `tl_live_${Math.random().toString(36).substr(2, 28)}`,
-        maskedKey: `tl_live_***...${Math.random().toString(36).substr(2, 8)}`,
-        createdAt: new Date().toISOString().split('T')[0],
-        lastUsed: 'Never',
-        status: 'active',
-      };
-      setApiKeys([...apiKeys, newKey]);
-      setNewKeyName('');
-      setShowNewKeyModal(false);
+      try {
+        await createMutation.mutate(newKeyName);
+        setNewKeyName('');
+        setShowNewKeyModal(false);
+        refetch();
+      } catch (error) {
+        console.error('Erro ao criar chave:', error);
+      }
     }
   };
 
@@ -73,114 +63,149 @@ export default function ApiKeysPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleDelete = (id: string) => {
-    setApiKeys(apiKeys.filter((key) => key.id !== id));
-    setOpenMenu(null);
+  const handleDelete = async (keyId: string) => {
+    try {
+      await deleteMutation.mutate(keyId);
+      setShowDeleteConfirm(null);
+      setOpenMenu(null);
+      refetch();
+    } catch (error) {
+      console.error('Erro ao deletar chave:', error);
+    }
   };
 
-  const handleToggleStatus = (id: string) => {
-    setApiKeys(
-      apiKeys.map((key) =>
-        key.id === id
-          ? { ...key, status: key.status === 'active' ? 'inactive' : 'active' }
-          : key
-      )
-    );
-    setOpenMenu(null);
+  const handleToggleStatus = async (keyId: string) => {
+    try {
+      await toggleMutation.mutate(keyId);
+      setOpenMenu(null);
+      refetch();
+    } catch (error) {
+      console.error('Erro ao alternar status:', error);
+    }
   };
 
   return (
     <div className="space-y-6 animate-fadeIn max-w-4xl">
-      {/* Page header */}
+      {/* Cabeçalho da página */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-slate-900">API Keys</h1>
-          <p className="text-slate-600">Manage your API credentials for authentication</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+            Chaves de API
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400">
+            Gerencie suas credenciais de API para autenticação
+          </p>
         </div>
         <button
           onClick={() => setShowNewKeyModal(true)}
           className="btn-primary flex items-center justify-center gap-2 md:w-auto"
         >
           <Plus size={20} />
-          Create API Key
+          Nova Chave
         </button>
       </div>
 
-      {/* Info card */}
-      <div className="card bg-blue-50 border border-blue-200">
-        <p className="text-sm text-blue-800">
-          <strong>Security:</strong> Never share your API keys. Store them securely and rotate them periodically. If you suspect a key has been compromised, delete it immediately.
+      {/* Cartão informativo */}
+      <div className="card bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+        <p className="text-sm text-blue-800 dark:text-blue-300">
+          <strong>Segurança:</strong> Nunca compartilhe suas chaves de API.
+          Guarde-as em um lugar seguro e rotacione periodicamente. Se suspeitar que
+          uma chave foi comprometida, delete-a imediatamente.
         </p>
       </div>
 
-      {/* API Keys list */}
-      <div className="card">
-        {apiKeys.length === 0 ? (
+      {/* Lista de chaves */}
+      <div className="card dark:bg-slate-800 dark:border-slate-700">
+        {keysLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-24 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"
+              />
+            ))}
+          </div>
+        ) : apiKeys.length === 0 ? (
           <div className="text-center py-12">
-            <Key size={48} className="mx-auto text-slate-300 mb-4" />
-            <h3 className="text-lg font-semibold text-slate-900">No API keys yet</h3>
-            <p className="text-slate-600 text-sm mt-2">Create your first API key to get started</p>
+            <Key size={48} className="mx-auto text-slate-300 dark:text-slate-600 mb-4" />
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Nenhuma chave de API ainda
+            </h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">
+              Crie sua primeira chave de API para começar
+            </p>
             <button
               onClick={() => setShowNewKeyModal(true)}
               className="btn-primary mt-4 inline-flex gap-2"
             >
               <Plus size={18} />
-              Create API Key
+              Nova Chave
             </button>
           </div>
         ) : (
           <div className="space-y-3">
             {apiKeys.map((apiKey) => (
-              <div key={apiKey.id} className="flex items-start justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+              <div
+                key={apiKey.id}
+                className="flex items-start justify-between p-4 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-slate-900">{apiKey.name}</h3>
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        apiKey.status === 'active'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-slate-100 text-slate-700'
-                      }`}
-                    >
-                      {apiKey.status === 'active' ? 'Active' : 'Inactive'}
+                    <h3 className="font-semibold text-slate-900 dark:text-white">
+                      {apiKey.name}
+                    </h3>
+                    <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                      Ativa
                     </span>
                   </div>
 
                   <div className="flex flex-col gap-2 mt-3">
-                    {/* Key display */}
+                    {/* Exibição da chave */}
                     <div className="flex items-center gap-2">
-                      <code className="text-sm bg-slate-100 px-3 py-2 rounded flex-1 font-mono truncate">
-                        {visibleKey === apiKey.id ? apiKey.key : apiKey.maskedKey}
+                      <code className="text-sm bg-slate-100 dark:bg-slate-700 px-3 py-2 rounded flex-1 font-mono truncate dark:text-slate-300">
+                        {visibleKey === apiKey.id ? apiKey.key : `${apiKey.key.substring(0, 15)}...`}
                       </code>
                       <button
-                        onClick={() => setVisibleKey(visibleKey === apiKey.id ? null : apiKey.id)}
-                        className="p-2 rounded hover:bg-slate-200 transition-colors"
-                        title={visibleKey === apiKey.id ? 'Hide' : 'Show'}
+                        onClick={() =>
+                          setVisibleKey(
+                            visibleKey === apiKey.id ? null : apiKey.id
+                          )
+                        }
+                        className="p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                        title={visibleKey === apiKey.id ? 'Ocultar' : 'Mostrar'}
                       >
                         {visibleKey === apiKey.id ? (
-                          <EyeOff size={16} className="text-slate-600" />
+                          <EyeOff size={16} className="text-slate-600 dark:text-slate-400" />
                         ) : (
-                          <Eye size={16} className="text-slate-600" />
+                          <Eye size={16} className="text-slate-600 dark:text-slate-400" />
                         )}
                       </button>
                       <button
                         onClick={() => handleCopyKey(apiKey.key, apiKey.id)}
-                        className="p-2 rounded hover:bg-slate-200 transition-colors"
-                        title="Copy to clipboard"
+                        className="p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                        title="Copiar para clipboard"
                       >
-                        <Copy size={16} className={copiedId === apiKey.id ? 'text-green-600' : 'text-slate-600'} />
+                        <Copy
+                          size={16}
+                          className={
+                            copiedId === apiKey.id
+                              ? 'text-green-600 dark:text-green-400'
+                              : 'text-slate-600 dark:text-slate-400'
+                          }
+                        />
                       </button>
                     </div>
 
-                    {/* Metadata */}
-                    <div className="flex flex-col sm:flex-row gap-4 text-xs text-slate-600 mt-2">
+                    {/* Metadados */}
+                    <div className="flex flex-col sm:flex-row gap-4 text-xs text-slate-600 dark:text-slate-400 mt-2">
                       <div className="flex items-center gap-1">
                         <Calendar size={14} />
-                        Created {apiKey.createdAt}
+                        Criada {new Date(apiKey.created_at).toLocaleDateString('pt-BR')}
                       </div>
                       <div className="flex items-center gap-1">
                         <Calendar size={14} />
-                        Last used {apiKey.lastUsed}
+                        Último uso{' '}
+                        {apiKey.last_used ? new Date(apiKey.last_used).toLocaleDateString('pt-BR') : 'Nunca'}
                       </div>
                     </div>
                   </div>
@@ -189,25 +214,27 @@ export default function ApiKeysPage() {
                 {/* Menu */}
                 <div className="relative ml-2 flex-shrink-0">
                   <button
-                    onClick={() => setOpenMenu(openMenu === apiKey.id ? null : apiKey.id)}
-                    className="p-2 rounded hover:bg-slate-200 transition-colors"
+                    onClick={() =>
+                      setOpenMenu(openMenu === apiKey.id ? null : apiKey.id)
+                    }
+                    className="p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
                   >
-                    <MoreVertical size={16} />
+                    <MoreVertical size={16} className="dark:text-slate-400" />
                   </button>
 
                   {openMenu === apiKey.id && (
-                    <div className="absolute right-0 top-full mt-2 w-40 bg-white border border-slate-200 rounded-lg shadow-lg z-10">
+                    <div className="absolute right-0 top-full mt-2 w-40 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg z-10">
                       <button
                         onClick={() => handleToggleStatus(apiKey.id)}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 transition-colors"
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors dark:text-slate-300"
                       >
-                        {apiKey.status === 'active' ? 'Deactivate' : 'Activate'}
+                        Desativar
                       </button>
                       <button
-                        onClick={() => handleDelete(apiKey.id)}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        onClick={() => setShowDeleteConfirm(apiKey.id)}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-slate-600 transition-colors"
                       >
-                        Delete
+                        Deletar
                       </button>
                     </div>
                   )}
@@ -218,43 +245,51 @@ export default function ApiKeysPage() {
         )}
       </div>
 
-      {/* Documentation card */}
-      <div className="card bg-slate-50 border border-slate-200">
-        <h3 className="font-semibold text-slate-900 mb-3">Using Your API Key</h3>
-        <p className="text-sm text-slate-700 mb-3">Include your API key in the Authorization header:</p>
-        <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto text-xs font-mono">
+      {/* Cartão de documentação */}
+      <div className="card bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+        <h3 className="font-semibold text-slate-900 dark:text-white mb-3">
+          Usando Sua Chave de API
+        </h3>
+        <p className="text-sm text-slate-700 dark:text-slate-400 mb-3">
+          Inclua sua chave de API no header de Autorização:
+        </p>
+        <pre className="bg-slate-900 dark:bg-slate-950 text-slate-100 p-4 rounded-lg overflow-x-auto text-xs font-mono">
           {`curl -H "Authorization: Bearer YOUR_API_KEY" \\
   https://techlicense-chatbot-api.techlicensebr.workers.dev/v1/bots`}
         </pre>
-        <p className="text-xs text-slate-600 mt-3">
-          For more information, see the{' '}
-          <a href="#" className="text-blue-600 hover:underline">
-            API documentation
+        <p className="text-xs text-slate-600 dark:text-slate-400 mt-3">
+          Para mais informações, veja a{' '}
+          <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
+            documentação da API
           </a>
         </p>
       </div>
 
-      {/* Create key modal */}
+      {/* Modal de criação de chave */}
       {showNewKeyModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
-            <h2 className="text-lg font-bold text-slate-900 mb-4">Create API Key</h2>
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg max-w-md w-full p-6">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
+              Criar Nova Chave de API
+            </h2>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Key Name</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-2">
+                Nome da Chave
+              </label>
               <input
                 type="text"
                 value={newKeyName}
                 onChange={(e) => setNewKeyName(e.target.value)}
-                placeholder="e.g., Production API"
-                className="input-field"
+                placeholder="Ex: API de Produção"
+                className="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-slate-500"
                 autoFocus
               />
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-              <p className="text-xs text-blue-800">
-                Save your key securely. You won't be able to see it again.
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4">
+              <p className="text-xs text-blue-800 dark:text-blue-300">
+                Guarde sua chave em um lugar seguro. Ela não será exibida novamente.
               </p>
             </div>
 
@@ -264,16 +299,46 @@ export default function ApiKeysPage() {
                   setShowNewKeyModal(false);
                   setNewKeyName('');
                 }}
-                className="btn-secondary"
+                className="btn-secondary dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 onClick={handleCreateKey}
-                disabled={!newKeyName.trim()}
+                disabled={!newKeyName.trim() || createMutation.loading}
                 className="btn-primary disabled:opacity-50"
               >
-                Create
+                {createMutation.loading ? 'Criando...' : 'Criar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmação de exclusão */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg max-w-sm w-full p-6">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
+              Confirmar Exclusão
+            </h2>
+            <p className="text-slate-600 dark:text-slate-400 mb-6">
+              Tem certeza que deseja excluir esta chave? Esta ação não pode ser
+              desfeita.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="btn-secondary dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleDelete(showDeleteConfirm)}
+                disabled={deleteMutation.loading}
+                className="btn-primary disabled:opacity-50"
+              >
+                {deleteMutation.loading ? 'Deletando...' : 'Deletar'}
               </button>
             </div>
           </div>

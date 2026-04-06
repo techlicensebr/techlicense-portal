@@ -1,160 +1,320 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Mail, Lock, Loader, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [useMagicLink, setUseMagicLink] = useState(false);
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
+type LoginMode = 'password' | 'magic-link';
 
-  const handlePasswordLogin = async (e: React.FormEvent) => {
+interface FormErrors {
+  email?: string;
+  password?: string;
+  general?: string;
+}
+
+export default function LoginPage(): React.ReactElement {
+  const router = useRouter();
+  const { login } = useAuth();
+
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [loginMode, setLoginMode] = useState<LoginMode>('password');
+  const [magicLinkSent, setMagicLinkSent] = useState<boolean>(false);
+
+  const validateEmail = (emailValue: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(emailValue);
+  };
+
+  const validatePasswordForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!email.trim()) {
+      newErrors.email = 'E-mail é obrigatório';
+    } else if (!validateEmail(email)) {
+      newErrors.email = 'E-mail inválido';
+    }
+
+    if (!password.trim()) {
+      newErrors.password = 'Senha é obrigatória';
+    } else if (password.length < 6) {
+      newErrors.password = 'Senha deve ter no mínimo 6 caracteres';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateMagicLinkForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!email.trim()) {
+      newErrors.email = 'E-mail é obrigatório';
+    } else if (!validateEmail(email)) {
+      newErrors.email = 'E-mail inválido';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handlePasswordLogin = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    setError('');
+    setErrors({});
+
+    if (!validatePasswordForm()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await login(email, password);
 
-      if (email && password) {
-        // In production, call apiClient.login(email, password)
-        window.location.href = '/';
+      if (rememberMe) {
+        localStorage.setItem('techlicense_email', email);
       } else {
-        setError('Please enter email and password');
+        localStorage.removeItem('techlicense_email');
       }
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please try again.');
+
+      router.push('/');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Falha ao fazer login. Tente novamente.';
+      const authError = errorMessage.toLowerCase();
+
+      if (authError.includes('credenciais') || authError.includes('invalid') || authError.includes('password')) {
+        setErrors({ general: 'E-mail ou senha incorretos' });
+      } else if (authError.includes('não encontrado') || authError.includes('not found')) {
+        setErrors({ general: 'Conta não encontrada. Crie uma conta gratuita' });
+      } else if (authError.includes('rede') || authError.includes('network')) {
+        setErrors({ general: 'Erro de conexão. Verifique sua internet' });
+      } else {
+        setErrors({ general: errorMessage });
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleMagicLink = async (e: React.FormEvent) => {
+  const handleMagicLink = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    setError('');
+    setErrors({});
+
+    if (!validateMagicLinkForm()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch('/api/auth/send-magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
 
-      if (email) {
-        // In production, call apiClient.sendMagicLink(email)
-        setMagicLinkSent(true);
-      } else {
-        setError('Please enter your email');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao enviar link mágico');
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to send magic link');
+
+      setMagicLinkSent(true);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao enviar o link. Tente novamente.';
+      if (errorMessage.toLowerCase().includes('não encontrado')) {
+        setErrors({ general: 'Conta não encontrada. Crie uma conta gratuita' });
+      } else {
+        setErrors({ general: errorMessage });
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setError('');
+  const handleGoogleLogin = async (): Promise<void> => {
+    setErrors({});
     setLoading(true);
 
     try {
-      // Simulate Google OAuth
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      // In production, implement actual Google OAuth flow
-      window.location.href = '/';
-    } catch (err: any) {
-      setError('Google login failed');
-    } finally {
+      window.location.href = '/api/auth/google';
+    } catch (err: unknown) {
+      setErrors({ general: 'Erro ao fazer login com Google' });
       setLoading(false);
     }
+  };
+
+  const handleSwitchMode = (): void => {
+    const newMode: LoginMode = loginMode === 'password' ? 'magic-link' : 'password';
+    setLoginMode(newMode);
+    setErrors({});
+    setPassword('');
+  };
+
+  const resetMagicLink = (): void => {
+    setMagicLinkSent(false);
+    setEmail('');
+    setErrors({});
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white text-lg mx-auto mb-4">
-              TL
-            </div>
-            <h1 className="text-2xl font-bold text-slate-900">TechLicense</h1>
-            <p className="text-slate-600 mt-2">Admin Portal</p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-700 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
+      {/* Animated background elements */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 
+      <div className="w-full max-w-md relative z-10">
+        {/* Main card */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 backdrop-blur-xl bg-opacity-95 dark:bg-opacity-95">
           {magicLinkSent ? (
-            <div className="text-center space-y-4">
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-green-800 text-sm font-medium">
-                  Magic link sent to <strong>{email}</strong>
-                </p>
-                <p className="text-green-700 text-xs mt-2">
-                  Check your email for a secure login link. It will expire in 24 hours.
+            // Magic link sent state
+            <div className="text-center space-y-6">
+              <div className="flex justify-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Link enviado!</h2>
+                <p className="text-slate-600 dark:text-slate-400 mt-2 text-sm">
+                  Verifique seu e-mail <strong className="text-slate-900 dark:text-white">{email}</strong> para o link de acesso seguro
                 </p>
               </div>
+
+              <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+                <p className="text-green-800 dark:text-green-300 text-sm">
+                  O link expira em 24 horas
+                </p>
+              </div>
+
               <button
-                onClick={() => {
-                  setMagicLinkSent(false);
-                  setEmail('');
-                }}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                onClick={resetMagicLink}
+                className="w-full px-4 py-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-semibold transition-colors"
               >
-                Back to login
+                Voltar para login
               </button>
             </div>
           ) : (
             <>
+              {/* Header */}
+              <div className="text-center mb-8">
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center font-bold text-white text-xl mx-auto mb-4 shadow-lg">
+                  TL
+                </div>
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Entrar na sua conta</h1>
+                <p className="text-slate-600 dark:text-slate-400 mt-2">TechLicense Chatbot IA</p>
+              </div>
+
               {/* Error message */}
-              {error && (
-                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-800 text-sm">{error}</p>
+              {errors.general && (
+                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                  <p className="text-red-800 dark:text-red-300 text-sm font-medium">{errors.general}</p>
                 </div>
               )}
 
               {/* Login form */}
-              <form onSubmit={useMagicLink ? handleMagicLink : handlePasswordLogin} className="space-y-4">
+              <form
+                onSubmit={loginMode === 'password' ? handlePasswordLogin : handleMagicLink}
+                className="space-y-5"
+              >
                 {/* Email input */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
+                  <label htmlFor="email" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                    E-mail
+                  </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
+                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
                     <input
+                      id="email"
                       type="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      className="input-field pl-10"
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (errors.email) {
+                          setErrors({ ...errors, email: '' });
+                        }
+                      }}
+                      placeholder="seu.email@exemplo.com"
+                      className={`w-full pl-12 pr-4 py-3 rounded-lg border-2 transition-colors ${
+                        errors.email
+                          ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10 focus:outline-none focus:border-red-500'
+                          : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900'
+                      } text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400`}
                       required
+                      autoComplete="email"
                     />
                   </div>
+                  {errors.email && <p className="text-red-600 dark:text-red-400 text-xs mt-2">{errors.email}</p>}
                 </div>
 
-                {/* Password input */}
-                {!useMagicLink && (
+                {/* Password input - only for password mode */}
+                {loginMode === 'password' && (
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label htmlFor="password" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        Senha
+                      </label>
+                      <a
+                        href="/recuperar-senha"
+                        className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
+                      >
+                        Esqueceu a senha?
+                      </a>
+                    </div>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
+                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
                       <input
+                        id="password"
                         type={showPassword ? 'text' : 'password'}
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (errors.password) {
+                            setErrors({ ...errors, password: '' });
+                          }
+                        }}
                         placeholder="••••••••"
-                        className="input-field pl-10 pr-10"
+                        className={`w-full pl-12 pr-12 py-3 rounded-lg border-2 transition-colors ${
+                          errors.password
+                            ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10 focus:outline-none focus:border-red-500'
+                            : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900'
+                        } text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400`}
                         required
+                        autoComplete="current-password"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400 transition-colors"
+                        tabIndex={-1}
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
+                    {errors.password && <p className="text-red-600 dark:text-red-400 text-xs mt-2">{errors.password}</p>}
+                  </div>
+                )}
+
+                {/* Remember me checkbox - only for password mode */}
+                {loginMode === 'password' && (
+                  <div className="flex items-center">
+                    <input
+                      id="remember"
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-600 cursor-pointer"
+                    />
+                    <label htmlFor="remember" className="ml-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                      Lembrar de mim
+                    </label>
                   </div>
                 )}
 
@@ -162,25 +322,26 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-400 text-white font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed mt-6"
                 >
                   {loading && <Loader size={18} className="animate-spin" />}
-                  {useMagicLink ? 'Send Magic Link' : 'Sign In'}
+                  {loginMode === 'password' ? 'Entrar' : 'Enviar link mágico'}
                 </button>
               </form>
 
               {/* Divider */}
               <div className="my-6 flex items-center gap-3">
-                <div className="flex-1 border-t border-slate-200" />
-                <span className="text-xs text-slate-500">OR</span>
-                <div className="flex-1 border-t border-slate-200" />
+                <div className="flex-1 border-t border-slate-200 dark:border-slate-700" />
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">OU</span>
+                <div className="flex-1 border-t border-slate-200 dark:border-slate-700" />
               </div>
 
               {/* Google button */}
               <button
+                type="button"
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 font-medium text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-3 font-semibold text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -200,44 +361,65 @@ export default function LoginPage() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                Continue with Google
+                Continuar com Google
               </button>
 
-              {/* Toggle magic link */}
+              {/* Toggle authentication method */}
               <div className="mt-6 text-center">
                 <button
                   type="button"
-                  onClick={() => {
-                    setUseMagicLink(!useMagicLink);
-                    setError('');
-                    setPassword('');
-                  }}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  onClick={handleSwitchMode}
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-semibold transition-colors"
                 >
-                  {useMagicLink ? 'Use password instead' : 'Use magic link instead'}
+                  {loginMode === 'password' ? 'Entrar com link mágico' : 'Entrar com senha'}
                 </button>
               </div>
 
-              {/* Footer */}
-              <div className="mt-8 text-center text-sm text-slate-600">
-                <p>
-                  Protected by{' '}
-                  <span className="font-semibold text-slate-900">
-                    TechLicense Security
-                  </span>
+              {/* Sign up link */}
+              <div className="mt-8 text-center border-t border-slate-200 dark:border-slate-700 pt-6">
+                <p className="text-slate-600 dark:text-slate-400 text-sm">
+                  Não tem conta?{' '}
+                  <a href="/registrar" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold transition-colors">
+                    Criar conta gratuita
+                  </a>
                 </p>
+              </div>
+
+              {/* Security footer */}
+              <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                <p>Protegido por TechLicense Security</p>
               </div>
             </>
           )}
         </div>
 
-        {/* Demo credentials hint */}
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-xs text-blue-800">
-            <strong>Demo:</strong> Use any email and password to continue (demo mode)
-          </p>
-        </div>
+        {/* Footer info */}
+        <p className="mt-6 text-center text-sm text-slate-300 dark:text-slate-500">
+          Plataforma segura e criptografada
+        </p>
       </div>
+
+      <style jsx>{`
+        @keyframes blob {
+          0%, 100% {
+            transform: translate(0, 0) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+        }
+
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+      `}</style>
     </div>
   );
 }
