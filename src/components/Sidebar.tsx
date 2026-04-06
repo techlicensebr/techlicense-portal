@@ -152,11 +152,7 @@ export default function Sidebar() {
             className="flex items-center gap-3 mb-8 hover:opacity-90 transition-opacity group"
             onClick={() => setIsOpen(false)}
           >
-            <img src="/logo-icon.svg" alt="TechLicense" className="w-9 h-9" />
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-silver-300" style={{ color: '#C0C0C0' }}>TechLicense</span>
-              <span className="text-xs" style={{ color: '#D4A843' }}>Chatbot IA</span>
-            </div>
+            <img src="/logo.png" alt="TechLicense" className="h-8" />
           </Link>
 
           {/* Navigation */}
