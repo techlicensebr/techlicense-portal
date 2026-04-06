@@ -205,7 +205,7 @@ export default function LoginPage(): React.ReactElement {
             <>
               {/* Header */}
               <div className="text-center mb-8">
-                <img src="/logo.svg" alt="TechLicense" className="h-12 mx-auto mb-6" />
+                <img src="/logo.png" alt="TechLicense" className="h-14 mx-auto mb-6" />
                 <h1 className="text-3xl font-bold text-[#C0C0C0]">Entrar na sua conta</h1>
                 <p className="text-[#707070] mt-2">Plataforma de Chatbot IA</p>
               </div>
