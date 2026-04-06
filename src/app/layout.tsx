@@ -28,10 +28,8 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>TechLicense Portal - Gerenciador de Chatbots IA</title>
         <meta name="description" content="Gerencie seus chatbots de IA com TechLicense" />
-        <link
-          rel="icon"
-          href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect fill='%232563eb' width='32' height='32'/><text x='50%' y='50%' font-size='16' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central'>TL</text></svg>"
-        />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/icon.png" />
       </head>
       <body className="bg-white dark:bg-slate-950">
         <ThemeProvider>
