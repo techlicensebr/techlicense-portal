@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://techlicense-chatbot-api.techlicensebr.workers.dev';
+const V1_BASE_URL = `${API_BASE_URL}/v1`;
 const TOKEN_KEY = 'tl_token';
 
 export interface ApiError {
@@ -294,10 +295,11 @@ class APIClient {
   }
 
   // ============ BOTS ENDPOINTS ============
+  // API: GET /v1/bots, GET /v1/bots/:id, POST /v1/bots, PATCH /v1/bots/:id, DELETE /v1/bots/:id
 
   async getBots(params?: PaginationParams) {
     try {
-      const response = await this.client.get('/bots', { params });
+      const response = await this.client.get(`${V1_BASE_URL}/bots`, { params });
       return response.data as { bots: BotData[]; total: number };
     } catch (error) {
       throw this.handleError(error);
@@ -306,7 +308,7 @@ class APIClient {
 
   async getBot(id: string) {
     try {
-      const response = await this.client.get(`/bots/${id}`);
+      const response = await this.client.get(`${V1_BASE_URL}/bots/${id}`);
       return response.data as BotData;
     } catch (error) {
       throw this.handleError(error);
@@ -315,7 +317,7 @@ class APIClient {
 
   async createBot(data: Partial<BotData>) {
     try {
-      const response = await this.client.post('/bots', data);
+      const response = await this.client.post(`${V1_BASE_URL}/bots`, data);
       return response.data as BotData;
     } catch (error) {
       throw this.handleError(error);
@@ -324,7 +326,7 @@ class APIClient {
 
   async updateBot(id: string, data: Partial<BotData>) {
     try {
-      const response = await this.client.put(`/bots/${id}`, data);
+      const response = await this.client.patch(`${V1_BASE_URL}/bots/${id}`, data);
       return response.data as BotData;
     } catch (error) {
       throw this.handleError(error);
@@ -333,7 +335,7 @@ class APIClient {
 
   async deleteBot(id: string) {
     try {
-      const response = await this.client.delete(`/bots/${id}`);
+      const response = await this.client.delete(`${V1_BASE_URL}/bots/${id}`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -342,7 +344,8 @@ class APIClient {
 
   async toggleBotStatus(id: string) {
     try {
-      const response = await this.client.patch(`/bots/${id}/toggle-status`);
+      // NOTE: Route does not exist in API yet - needs implementation
+      const response = await this.client.patch(`${V1_BASE_URL}/bots/${id}/toggle-status`);
       return response.data as BotData;
     } catch (error) {
       throw this.handleError(error);
@@ -350,10 +353,11 @@ class APIClient {
   }
 
   // ============ CONVERSATIONS ENDPOINTS ============
+  // API: GET /v1/conversations, GET /v1/conversations/:id, PATCH /v1/conversations/:id
 
   async getConversations(params?: PaginationParams & { bot_id?: string; status?: string }) {
     try {
-      const response = await this.client.get('/conversations', { params });
+      const response = await this.client.get(`${V1_BASE_URL}/conversations`, { params });
       return response.data as { conversations: ConversationData[]; total: number };
     } catch (error) {
       throw this.handleError(error);
@@ -362,7 +366,7 @@ class APIClient {
 
   async getConversation(id: string) {
     try {
-      const response = await this.client.get(`/conversations/${id}`);
+      const response = await this.client.get(`${V1_BASE_URL}/conversations/${id}`);
       return response.data as ConversationData;
     } catch (error) {
       throw this.handleError(error);
@@ -371,7 +375,8 @@ class APIClient {
 
   async getConversationMessages(id: string, params?: PaginationParams) {
     try {
-      const response = await this.client.get(`/conversations/${id}/messages`, { params });
+      // NOTE: Route does not exist in API yet - messages are returned with conversation detail
+      const response = await this.client.get(`${V1_BASE_URL}/conversations/${id}/messages`, { params });
       return response.data as { messages: MessageData[]; total: number };
     } catch (error) {
       throw this.handleError(error);
@@ -380,7 +385,8 @@ class APIClient {
 
   async sendMessage(conversationId: string, content: string) {
     try {
-      const response = await this.client.post(`/conversations/${conversationId}/messages`, { content });
+      // NOTE: Route does not exist in API yet - needs implementation
+      const response = await this.client.post(`${V1_BASE_URL}/conversations/${conversationId}/messages`, { content });
       return response.data as MessageData;
     } catch (error) {
       throw this.handleError(error);
@@ -388,10 +394,11 @@ class APIClient {
   }
 
   // ============ KNOWLEDGE BASE ENDPOINTS ============
+  // API: GET /v1/knowledge/:botId, GET /v1/knowledge/:botId/documents, POST /v1/knowledge/:botId/documents, DELETE /v1/knowledge/:botId/documents/:docId
 
   async getKnowledgeBase(botId: string, params?: PaginationParams) {
     try {
-      const response = await this.client.get(`/bots/${botId}/knowledge`, { params });
+      const response = await this.client.get(`${V1_BASE_URL}/knowledge/${botId}`, { params });
       return response.data as { documents: KnowledgeDocData[]; total: number };
     } catch (error) {
       throw this.handleError(error);
@@ -402,7 +409,7 @@ class APIClient {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await this.client.post(`/bots/${botId}/knowledge/upload`, formData, {
+      const response = await this.client.post(`${V1_BASE_URL}/knowledge/${botId}/documents`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -415,7 +422,7 @@ class APIClient {
 
   async deleteDocument(botId: string, documentId: string) {
     try {
-      const response = await this.client.delete(`/bots/${botId}/knowledge/${documentId}`);
+      const response = await this.client.delete(`${V1_BASE_URL}/knowledge/${botId}/documents/${documentId}`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -424,7 +431,8 @@ class APIClient {
 
   async searchKnowledgeBase(botId: string, query: string) {
     try {
-      const response = await this.client.get(`/bots/${botId}/knowledge/search`, {
+      // NOTE: Route does not exist in API yet - needs implementation
+      const response = await this.client.get(`${V1_BASE_URL}/knowledge/${botId}/search`, {
         params: { query },
       });
       return response.data as { documents: KnowledgeDocData[] };
@@ -434,6 +442,7 @@ class APIClient {
   }
 
   // ============ ANALYTICS ENDPOINTS ============
+  // API: GET /v1/analytics/usage, GET /v1/analytics/conversations
 
   async getAnalyticsOverview(params?: {
     bot_id?: string;
@@ -441,7 +450,8 @@ class APIClient {
     end_date?: string;
   }) {
     try {
-      const response = await this.client.get('/analytics/overview', { params });
+      // NOTE: Route does not exist in API yet - use /v1/analytics/usage instead
+      const response = await this.client.get(`${V1_BASE_URL}/analytics/usage`, { params });
       return response.data as AnalyticsData;
     } catch (error) {
       throw this.handleError(error);
@@ -455,7 +465,8 @@ class APIClient {
     interval?: 'day' | 'week' | 'month';
   }) {
     try {
-      const response = await this.client.get('/analytics/conversations-chart', { params });
+      // NOTE: Route does not exist in API yet - needs implementation
+      const response = await this.client.get(`${V1_BASE_URL}/analytics/conversations-chart`, { params });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -464,7 +475,8 @@ class APIClient {
 
   async getBotsPerformance(params?: PaginationParams) {
     try {
-      const response = await this.client.get('/analytics/bots-performance', { params });
+      // NOTE: Route does not exist in API yet - needs implementation
+      const response = await this.client.get(`${V1_BASE_URL}/analytics/bots-performance`, { params });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -478,7 +490,8 @@ class APIClient {
     end_date?: string;
   }) {
     try {
-      const response = await this.client.get('/analytics/export', {
+      // NOTE: Route does not exist in API yet - needs implementation
+      const response = await this.client.get(`${V1_BASE_URL}/analytics/export`, {
         params,
         responseType: 'blob',
       });
@@ -489,10 +502,11 @@ class APIClient {
   }
 
   // ============ API KEYS ENDPOINTS ============
+  // API: GET /v1/api-keys, POST /v1/api-keys, DELETE /v1/api-keys/:id
 
   async getApiKeys(params?: PaginationParams) {
     try {
-      const response = await this.client.get('/api-keys', { params });
+      const response = await this.client.get(`${V1_BASE_URL}/api-keys`, { params });
       return response.data as { keys: ApiKeyData[]; total: number };
     } catch (error) {
       throw this.handleError(error);
@@ -501,7 +515,7 @@ class APIClient {
 
   async createApiKey(name: string) {
     try {
-      const response = await this.client.post('/api-keys', { name });
+      const response = await this.client.post(`${V1_BASE_URL}/api-keys`, { name });
       return response.data as ApiKeyData;
     } catch (error) {
       throw this.handleError(error);
@@ -510,7 +524,7 @@ class APIClient {
 
   async deleteApiKey(id: string) {
     try {
-      const response = await this.client.delete(`/api-keys/${id}`);
+      const response = await this.client.delete(`${V1_BASE_URL}/api-keys/${id}`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -519,7 +533,8 @@ class APIClient {
 
   async toggleApiKey(id: string) {
     try {
-      const response = await this.client.patch(`/api-keys/${id}/toggle`);
+      // NOTE: Route does not exist in API yet - needs implementation
+      const response = await this.client.patch(`${V1_BASE_URL}/api-keys/${id}/toggle`);
       return response.data as ApiKeyData;
     } catch (error) {
       throw this.handleError(error);
@@ -527,10 +542,11 @@ class APIClient {
   }
 
   // ============ WEBHOOKS ENDPOINTS ============
+  // NOTE: Webhooks endpoints do not exist in API yet - needs implementation
 
   async getWebhooks(params?: PaginationParams) {
     try {
-      const response = await this.client.get('/webhooks', { params });
+      const response = await this.client.get(`${V1_BASE_URL}/webhooks`, { params });
       return response.data as { webhooks: WebhookData[]; total: number };
     } catch (error) {
       throw this.handleError(error);
@@ -539,7 +555,7 @@ class APIClient {
 
   async createWebhook(data: Partial<WebhookData>) {
     try {
-      const response = await this.client.post('/webhooks', data);
+      const response = await this.client.post(`${V1_BASE_URL}/webhooks`, data);
       return response.data as WebhookData;
     } catch (error) {
       throw this.handleError(error);
@@ -548,7 +564,7 @@ class APIClient {
 
   async updateWebhook(id: string, data: Partial<WebhookData>) {
     try {
-      const response = await this.client.put(`/webhooks/${id}`, data);
+      const response = await this.client.put(`${V1_BASE_URL}/webhooks/${id}`, data);
       return response.data as WebhookData;
     } catch (error) {
       throw this.handleError(error);
@@ -557,7 +573,7 @@ class APIClient {
 
   async deleteWebhook(id: string) {
     try {
-      const response = await this.client.delete(`/webhooks/${id}`);
+      const response = await this.client.delete(`${V1_BASE_URL}/webhooks/${id}`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -566,7 +582,7 @@ class APIClient {
 
   async testWebhook(id: string) {
     try {
-      const response = await this.client.post(`/webhooks/${id}/test`);
+      const response = await this.client.post(`${V1_BASE_URL}/webhooks/${id}/test`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -575,7 +591,7 @@ class APIClient {
 
   async getWebhookLogs(id: string, params?: PaginationParams) {
     try {
-      const response = await this.client.get(`/webhooks/${id}/logs`, { params });
+      const response = await this.client.get(`${V1_BASE_URL}/webhooks/${id}/logs`, { params });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -583,10 +599,11 @@ class APIClient {
   }
 
   // ============ CONTACTS ENDPOINTS ============
+  // NOTE: Contacts endpoints do not exist in API yet - needs implementation
 
   async getContacts(params?: PaginationParams) {
     try {
-      const response = await this.client.get('/contacts', { params });
+      const response = await this.client.get(`${V1_BASE_URL}/contacts`, { params });
       return response.data as { contacts: ContactData[]; total: number };
     } catch (error) {
       throw this.handleError(error);
@@ -595,7 +612,7 @@ class APIClient {
 
   async getContact(id: string) {
     try {
-      const response = await this.client.get(`/contacts/${id}`);
+      const response = await this.client.get(`${V1_BASE_URL}/contacts/${id}`);
       return response.data as ContactData;
     } catch (error) {
       throw this.handleError(error);
@@ -604,7 +621,7 @@ class APIClient {
 
   async createContact(data: Partial<ContactData>) {
     try {
-      const response = await this.client.post('/contacts', data);
+      const response = await this.client.post(`${V1_BASE_URL}/contacts`, data);
       return response.data as ContactData;
     } catch (error) {
       throw this.handleError(error);
@@ -613,7 +630,7 @@ class APIClient {
 
   async updateContact(id: string, data: Partial<ContactData>) {
     try {
-      const response = await this.client.put(`/contacts/${id}`, data);
+      const response = await this.client.put(`${V1_BASE_URL}/contacts/${id}`, data);
       return response.data as ContactData;
     } catch (error) {
       throw this.handleError(error);
@@ -621,10 +638,11 @@ class APIClient {
   }
 
   // ============ CHANNELS ENDPOINTS ============
+  // NOTE: Channels endpoints do not exist in API yet - needs implementation
 
   async setupWhatsApp(data: { phone_number: string; access_token: string }) {
     try {
-      const response = await this.client.post('/channels/whatsapp/setup', data);
+      const response = await this.client.post(`${V1_BASE_URL}/channels/whatsapp/setup`, data);
       return response.data as ChannelConfigData;
     } catch (error) {
       throw this.handleError(error);
@@ -633,7 +651,7 @@ class APIClient {
 
   async getWhatsAppQR(botId: string) {
     try {
-      const response = await this.client.get(`/channels/whatsapp/${botId}/qr`);
+      const response = await this.client.get(`${V1_BASE_URL}/channels/whatsapp/${botId}/qr`);
       return response.data as { qr_code: string };
     } catch (error) {
       throw this.handleError(error);
@@ -642,7 +660,7 @@ class APIClient {
 
   async sendWhatsAppMessage(botId: string, phoneNumber: string, message: string) {
     try {
-      const response = await this.client.post(`/channels/whatsapp/${botId}/send`, {
+      const response = await this.client.post(`${V1_BASE_URL}/channels/whatsapp/${botId}/send`, {
         phone_number: phoneNumber,
         message,
       });
@@ -654,7 +672,7 @@ class APIClient {
 
   async setupTelegram(data: { bot_token: string }) {
     try {
-      const response = await this.client.post('/channels/telegram/setup', data);
+      const response = await this.client.post(`${V1_BASE_URL}/channels/telegram/setup`, data);
       return response.data as ChannelConfigData;
     } catch (error) {
       throw this.handleError(error);
@@ -663,7 +681,7 @@ class APIClient {
 
   async getTelegramWebhookUrl(botId: string) {
     try {
-      const response = await this.client.get(`/channels/telegram/${botId}/webhook`);
+      const response = await this.client.get(`${V1_BASE_URL}/channels/telegram/${botId}/webhook`);
       return response.data as { webhook_url: string };
     } catch (error) {
       throw this.handleError(error);
@@ -671,10 +689,11 @@ class APIClient {
   }
 
   // ============ SETTINGS ENDPOINTS ============
+  // NOTE: Settings endpoints do not exist in API yet - needs implementation
 
   async getSettings() {
     try {
-      const response = await this.client.get('/settings');
+      const response = await this.client.get(`${V1_BASE_URL}/settings`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -683,7 +702,7 @@ class APIClient {
 
   async updateSettings(data: Record<string, unknown>) {
     try {
-      const response = await this.client.put('/settings', data);
+      const response = await this.client.put(`${V1_BASE_URL}/settings`, data);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -692,7 +711,7 @@ class APIClient {
 
   async changePassword(currentPassword: string, newPassword: string) {
     try {
-      const response = await this.client.post('/settings/change-password', {
+      const response = await this.client.post(`${V1_BASE_URL}/settings/change-password`, {
         current_password: currentPassword,
         new_password: newPassword,
       });
@@ -704,7 +723,7 @@ class APIClient {
 
   async toggle2FA(enabled: boolean) {
     try {
-      const response = await this.client.post('/settings/toggle-2fa', { enabled });
+      const response = await this.client.post(`${V1_BASE_URL}/settings/toggle-2fa`, { enabled });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -712,10 +731,11 @@ class APIClient {
   }
 
   // ============ BILLING ENDPOINTS ============
+  // NOTE: Billing endpoints do not exist in API yet - needs implementation
 
   async getSubscription() {
     try {
-      const response = await this.client.get('/billing/subscription');
+      const response = await this.client.get(`${V1_BASE_URL}/billing/subscription`);
       return response.data as BillingData;
     } catch (error) {
       throw this.handleError(error);
@@ -724,7 +744,7 @@ class APIClient {
 
   async checkoutSubscription(planId: string) {
     try {
-      const response = await this.client.post('/billing/checkout', { plan_id: planId });
+      const response = await this.client.post(`${V1_BASE_URL}/billing/checkout`, { plan_id: planId });
       return response.data as { checkout_url: string };
     } catch (error) {
       throw this.handleError(error);
@@ -733,7 +753,7 @@ class APIClient {
 
   async getPortalUrl() {
     try {
-      const response = await this.client.get('/billing/portal');
+      const response = await this.client.get(`${V1_BASE_URL}/billing/portal`);
       return response.data as { portal_url: string };
     } catch (error) {
       throw this.handleError(error);
@@ -742,7 +762,7 @@ class APIClient {
 
   async getInvoices(params?: PaginationParams) {
     try {
-      const response = await this.client.get('/billing/invoices', { params });
+      const response = await this.client.get(`${V1_BASE_URL}/billing/invoices`, { params });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -751,7 +771,7 @@ class APIClient {
 
   async getUsage(params?: { start_date?: string; end_date?: string }) {
     try {
-      const response = await this.client.get('/billing/usage', { params });
+      const response = await this.client.get(`${V1_BASE_URL}/billing/usage`, { params });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -759,10 +779,11 @@ class APIClient {
   }
 
   // ============ MODELS ENDPOINTS ============
+  // NOTE: Models endpoints do not exist in API yet - needs implementation
 
   async listModels() {
     try {
-      const response = await this.client.get('/models');
+      const response = await this.client.get(`${V1_BASE_URL}/models`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -771,7 +792,7 @@ class APIClient {
 
   async getModelPricing(modelId: string) {
     try {
-      const response = await this.client.get(`/models/${modelId}/pricing`);
+      const response = await this.client.get(`${V1_BASE_URL}/models/${modelId}/pricing`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
