@@ -2,7 +2,6 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://techlicense-chatbot-api.techlicensebr.workers.dev';
 const V1_BASE_URL = `${API_BASE_URL}/v1`;
-const TOKEN_KEY = 'tl_token';
 
 export interface ApiError {
   message: string;
@@ -109,108 +108,30 @@ export interface BillingData {
 
 class APIClient {
   private client: AxiosInstance;
-  private refreshTokenPromise: Promise<string> | null = null;
 
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE_URL,
       timeout: 15000,
+      withCredentials: true, // Send HttpOnly cookies automatically
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
-    // Interceptador de requisição
-    this.client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-      const token = this.getToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    });
-
-    // Interceptador de resposta para auto-refresh
+    // Response interceptor - handle 401 by redirecting to login
     this.client.interceptors.response.use(
       response => response,
-      async error => {
-        const originalRequest = error.config;
-
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
-
-          // Token demo — não tenta refresh, apenas rejeita o erro
-          const currentToken = this.getToken();
-          if (currentToken?.startsWith('tl_demo')) {
-            return Promise.reject(error);
-          }
-
-          try {
-            const newToken = await this.refreshAccessToken();
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            return this.client(originalRequest);
-          } catch (refreshError) {
-            // Falha ao atualizar - fazer logout
-            this.clearToken();
+      error => {
+        if (error.response?.status === 401) {
+          // Clear local state and redirect to login
+          if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
             window.location.href = '/login';
-            return Promise.reject(refreshError);
           }
         }
-
         return Promise.reject(error);
       }
     );
-  }
-
-  private getToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem(TOKEN_KEY);
-  }
-
-  setToken(token: string): void {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(TOKEN_KEY, token);
-  }
-
-  private clearToken(): void {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem('tl_user');
-    document.cookie = 'tl_token=; path=/; max-age=0';
-  }
-
-  private async refreshAccessToken(): Promise<string> {
-    // Evitar múltiplas requisições simultâneas de refresh
-    if (this.refreshTokenPromise) {
-      return this.refreshTokenPromise;
-    }
-
-    this.refreshTokenPromise = (async () => {
-      try {
-        const token = this.getToken();
-        if (!token) throw new Error('Token não disponível');
-
-        const response = await this.client.post(
-          '/v1/auth/refresh',
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const newToken = response.data.token;
-        this.setToken(newToken);
-        return newToken;
-      } catch (error) {
-        this.clearToken();
-        throw error;
-      } finally {
-        this.refreshTokenPromise = null;
-      }
-    })();
-
-    return this.refreshTokenPromise;
   }
 
   private handleError(error: unknown): ApiError {
@@ -238,10 +159,6 @@ class APIClient {
   async login(email: string, password: string) {
     try {
       const response = await this.client.post('/v1/auth/login', { email, password });
-      const { token } = response.data;
-      if (token) {
-        this.setToken(token);
-      }
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -260,10 +177,6 @@ class APIClient {
   async verifyMagicLink(token: string) {
     try {
       const response = await this.client.post('/v1/auth/verify-magic-link', { token });
-      const { token: newToken } = response.data;
-      if (newToken) {
-        this.setToken(newToken);
-      }
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -273,10 +186,6 @@ class APIClient {
   async loginGoogle(googleToken: string) {
     try {
       const response = await this.client.post('/v1/auth/google', { token: googleToken });
-      const { token } = response.data;
-      if (token) {
-        this.setToken(token);
-      }
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -295,10 +204,8 @@ class APIClient {
   async logout() {
     try {
       await this.client.post('/v1/auth/logout');
-      this.clearToken();
-    } catch (error) {
-      this.clearToken();
-      throw this.handleError(error);
+    } catch {
+      // Ignore server errors on logout
     }
   }
 
@@ -893,10 +800,6 @@ class APIClient {
   async register(data: { name: string; email: string; password: string; company_name: string; plan_slug?: string }) {
     try {
       const response = await this.client.post('/v1/auth/register', data);
-      const { token } = response.data;
-      if (token) {
-        this.setToken(token);
-      }
       return response.data;
     } catch (error) {
       throw this.handleError(error);

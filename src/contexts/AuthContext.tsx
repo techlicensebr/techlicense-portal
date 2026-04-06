@@ -8,99 +8,59 @@ export interface User {
   name: string;
   email: string;
   avatar_url?: string;
-  role: 'admin' | 'user' | 'viewer';
+  role: 'admin' | 'user' | 'viewer' | 'owner' | 'agent';
   organization_id?: string;
-  plan: 'free' | 'starter' | 'pro' | 'enterprise';
+  plan: string;
 }
 
 export interface AuthContextType {
   user: User | null;
-  token: string | null;
   loading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   loginMagicLink: (email: string) => Promise<void>;
   loginGoogle: (googleToken: string) => Promise<void>;
   logout: () => Promise<void>;
-  refreshToken: () => Promise<void>;
-  setUser: (user: User | null) => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = 'tl_token';
-const USER_KEY = 'tl_user';
-const TOKEN_REFRESH_INTERVAL = 45 * 60 * 1000; // 45 minutos
-
-function setCookie(token: string) {
-  document.cookie = `tl_token=${token}; path=/; max-age=86400; SameSite=Lax`;
-}
-
-function clearCookie() {
-  document.cookie = 'tl_token=; path=/; max-age=0';
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const isAuthenticated = !!token && !!user;
+  const isAuthenticated = !!user;
 
-  // Recuperar token e usuário do localStorage na montagem
-  useEffect(() => {
-    const storedToken = localStorage.getItem(TOKEN_KEY);
-    const storedUser = localStorage.getItem(USER_KEY);
-
-    if (storedToken) {
-      setToken(storedToken);
-      setCookie(storedToken);
-    }
-
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem(USER_KEY);
+  // On mount: check if session is valid by calling /me
+  const refreshUser = useCallback(async () => {
+    try {
+      const data = await apiClient.getCurrentUser();
+      if (data?.user) {
+        setUser(data.user);
+        // Set a flag cookie for Next.js middleware (non-HttpOnly, just for SSR redirect logic)
+        document.cookie = 'tl_token=active; path=/; max-age=86400; SameSite=Lax';
+      } else {
+        setUser(null);
+        document.cookie = 'tl_token=; path=/; max-age=0';
       }
+    } catch {
+      setUser(null);
+      document.cookie = 'tl_token=; path=/; max-age=0';
     }
-
-    setLoading(false);
   }, []);
 
-  // Auto-refresh do token
   useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const intervalId = setInterval(() => {
-      refreshToken();
-    }, TOKEN_REFRESH_INTERVAL);
-
-    return () => clearInterval(intervalId);
-  }, [isAuthenticated]);
-
-  const saveAuth = useCallback((newToken: string, userData: User) => {
-    localStorage.setItem(TOKEN_KEY, newToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(userData));
-    setCookie(newToken);
-    setToken(newToken);
-    setUser(userData);
-  }, []);
-
-  const clearAuth = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    clearCookie();
-    setToken(null);
-    setUser(null);
-  }, []);
+    refreshUser().finally(() => setLoading(false));
+  }, [refreshUser]);
 
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
     try {
       const data = await apiClient.login(email, password);
-
-      if (data.token && data.user) {
-        saveAuth(data.token, data.user);
+      if (data?.user) {
+        setUser(data.user);
+        // Set flag cookie for Next.js middleware
+        document.cookie = 'tl_token=active; path=/; max-age=86400; SameSite=Lax';
       } else {
         throw new Error('Resposta inválida do servidor');
       }
@@ -110,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [saveAuth]);
+  }, []);
 
   const loginMagicLink = useCallback(async (email: string) => {
     setLoading(true);
@@ -128,9 +88,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const data = await apiClient.loginGoogle(googleToken);
-
-      if (data.token && data.user) {
-        saveAuth(data.token, data.user);
+      if (data?.user) {
+        setUser(data.user);
+        document.cookie = 'tl_token=active; path=/; max-age=86400; SameSite=Lax';
       }
     } catch (error) {
       console.error('Erro de login com Google:', error);
@@ -138,37 +98,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [saveAuth]);
+  }, []);
 
   const logout = useCallback(async () => {
     setLoading(true);
     try {
       await apiClient.logout();
-    } catch {
-      // Ignorar erro do servidor no logout
     } finally {
-      clearAuth();
+      setUser(null);
+      document.cookie = 'tl_token=; path=/; max-age=0';
       setLoading(false);
     }
-  }, [clearAuth]);
-
-  const refreshToken = useCallback(async () => {
-    if (!token) return;
-    // TODO: implementar refresh real quando endpoint estiver pronto
-    // Por enquanto o token dura 24h e não precisa de refresh
-  }, [token]);
+  }, []);
 
   const value: AuthContextType = {
     user,
-    token,
     loading,
     isAuthenticated,
     login,
     loginMagicLink,
     loginGoogle,
     logout,
-    refreshToken,
-    setUser,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
