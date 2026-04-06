@@ -119,18 +119,11 @@ class APIClient {
       },
     });
 
-    // Response interceptor - handle 401 by redirecting to login
+    // Response interceptor - NO automatic redirect on 401
+    // Each caller handles 401 appropriately (AuthContext, login page, etc.)
     this.client.interceptors.response.use(
       response => response,
-      error => {
-        if (error.response?.status === 401) {
-          // Clear local state and redirect to login
-          if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-            window.location.href = '/login';
-          }
-        }
-        return Promise.reject(error);
-      }
+      error => Promise.reject(error)
     );
   }
 
@@ -196,8 +189,9 @@ class APIClient {
     try {
       const response = await this.client.get('/v1/auth/me');
       return response.data;
-    } catch (error) {
-      throw this.handleError(error);
+    } catch {
+      // 401 or network error (CORS block) = no session, return null silently
+      return null;
     }
   }
 
