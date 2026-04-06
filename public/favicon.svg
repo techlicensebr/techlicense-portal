@@ -1,0 +1,36 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="faviconGoldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8C860;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#D4A843;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- White background for clarity at small sizes -->
+  <rect width="64" height="64" fill="#FFFFFF"/>
+
+  <!-- Shield shape optimized for favicon -->
+  <g id="favicon-shield">
+    <!-- Main shield body -->
+    <path d="M 16 16 L 16 36 Q 16 50 32 57 Q 48 50 48 36 L 48 16 Z"
+          fill="url(#faviconGoldGradient)" stroke="#9A7C0A" stroke-width="1"/>
+
+    <!-- Padlock arc -->
+    <path d="M 22 16 Q 22 8 32 8 Q 42 8 42 16"
+          fill="none" stroke="url(#faviconGoldGradient)" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- Lock keyhole -->
+    <circle cx="32" cy="18" r="2" fill="none" stroke="#B8860B" stroke-width="1" opacity="0.8"/>
+
+    <!-- Lock shank -->
+    <rect x="30.5" y="22" width="3" height="12" fill="#B8860B" opacity="0.7" rx="1"/>
+
+    <!-- Integrated T shape -->
+    <rect x="20" y="25" width="24" height="2.5" fill="#B8860B" opacity="0.6" rx="1"/>
+    <rect x="30.5" y="27" width="3" height="8" fill="#B8860B" opacity="0.7" rx="1"/>
+
+    <!-- Shine for depth -->
+    <ellipse cx="25" cy="28" rx="4" ry="6" fill="#F0D980" opacity="0.4"/>
+  </g>
+</svg>
