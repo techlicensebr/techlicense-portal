@@ -1,20 +1,13 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePathname } from 'next/navigation';
-import { Search, Bell, LogOut, Settings, User } from 'lucide-react';
+import { Search, Bell, LogOut, Settings, User, Check, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { apiClient, NotificationData } from '@/lib/api';
 
 interface HeaderProps {
   onLogout?: () => void;
-}
-
-interface Notification {
-  id: number;
-  message: string;
-  time: string;
-  unread: boolean;
-  type?: 'info' | 'warning' | 'success' | 'error';
 }
 
 interface UserInfo {
@@ -22,38 +15,6 @@ interface UserInfo {
   email: string;
   plan: string;
 }
-
-// Mock notifications - replace with real data from API/context
-const mockNotifications: Notification[] = [
-  {
-    id: 1,
-    message: 'Bot "Agente de Suporte" recebeu 150 novas conversas',
-    time: 'há 2 horas',
-    unread: true,
-    type: 'info',
-  },
-  {
-    id: 2,
-    message: 'Cota de API em 85% de uso',
-    time: 'há 4 horas',
-    unread: true,
-    type: 'warning',
-  },
-  {
-    id: 3,
-    message: 'Atualização da base de conhecimento concluída',
-    time: 'há 1 dia',
-    unread: false,
-    type: 'success',
-  },
-];
-
-// Default user (will be overridden by useAuth in the component)
-const defaultUser: UserInfo = {
-  name: 'Usuário',
-  email: '',
-  plan: 'Plano Gratuito',
-};
 
 const getBreadcrumbLabel = (pathname: string): string => {
   const breadcrumbs: Record<string, string> = {
@@ -65,12 +26,44 @@ const getBreadcrumbLabel = (pathname: string): string => {
     '/api-keys': 'Chaves de API',
     '/webhooks': 'Webhooks',
     '/canais': 'Canais',
+    '/contacts': 'Contatos',
     '/cobranca': 'Cobrança',
     '/settings': 'Configurações',
     '/profile': 'Meu Perfil',
+    '/agent-workbench': 'Atendimento',
+    '/team': 'Time',
+    '/audit-logs': 'Auditoria',
   };
 
   return breadcrumbs[pathname] || 'Página';
+};
+
+const getNotificationColor = (type?: string) => {
+  switch (type) {
+    case 'warning':
+      return 'bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500';
+    case 'error':
+      return 'bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500';
+    case 'success':
+      return 'bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500';
+    default:
+      return 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500';
+  }
+};
+
+const formatTimeAgo = (dateStr: string): string => {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMin / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMin < 1) return 'agora';
+  if (diffMin < 60) return `há ${diffMin} min`;
+  if (diffHours < 24) return `há ${diffHours}h`;
+  if (diffDays < 7) return `há ${diffDays}d`;
+  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 };
 
 export default function Header({ onLogout }: HeaderProps) {
@@ -80,16 +73,17 @@ export default function Header({ onLogout }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const mockUser: UserInfo = {
-    name: authUser?.name || defaultUser.name,
-    email: authUser?.email || defaultUser.email,
-    plan: authUser?.plan === 'enterprise' ? 'Empresarial' : authUser?.plan === 'pro' ? 'Profissional' : defaultUser.plan,
-  };
+  // Real notification state
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifLoading, setNotifLoading] = useState(false);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const unreadCount = useMemo(
-    () => mockNotifications.filter((n) => n.unread).length,
-    []
-  );
+  const mockUser: UserInfo = {
+    name: authUser?.name || 'Usuário',
+    email: authUser?.email || '',
+    plan: authUser?.plan === 'enterprise' ? 'Empresarial' : authUser?.plan === 'pro' ? 'Profissional' : 'Plano Gratuito',
+  };
 
   const breadcrumbLabel = getBreadcrumbLabel(pathname);
 
@@ -102,23 +96,87 @@ export default function Header({ onLogout }: HeaderProps) {
       .slice(0, 2);
   };
 
-  const getNotificationColor = (type?: string) => {
-    switch (type) {
-      case 'warning':
-        return 'bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500';
-      case 'error':
-        return 'bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500';
-      case 'success':
-        return 'bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500';
-      default:
-        return 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500';
+  // Fetch notifications
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const result = await apiClient.getNotifications({ page: 1, per_page: 15 });
+      setNotifications(result.notifications);
+      setUnreadCount(result.unread_count);
+    } catch {
+      // Silently fail — notifications are non-critical
     }
-  };
+  }, []);
 
-  const handleMarkAllAsRead = () => {
-    // Implement mark all as read logic here
-    console.log('Mark all notifications as read');
-  };
+  // Poll unread count (lightweight)
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const count = await apiClient.getUnreadCount();
+      setUnreadCount(count);
+    } catch {
+      // Silently fail
+    }
+  }, []);
+
+  // Initial fetch + polling
+  useEffect(() => {
+    fetchNotifications();
+
+    // Poll unread count every 30 seconds
+    pollIntervalRef.current = setInterval(fetchUnreadCount, 30000);
+
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+    };
+  }, [fetchNotifications, fetchUnreadCount]);
+
+  // Full refresh when dropdown opens
+  useEffect(() => {
+    if (showNotifications) {
+      fetchNotifications();
+    }
+  }, [showNotifications, fetchNotifications]);
+
+  const handleMarkAsRead = useCallback(async (id: string) => {
+    try {
+      await apiClient.markNotificationRead(id);
+      setNotifications(prev =>
+        prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n)
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch {
+      // Silently fail
+    }
+  }, []);
+
+  const handleMarkAllAsRead = useCallback(async () => {
+    setNotifLoading(true);
+    try {
+      await apiClient.markAllNotificationsRead();
+      setNotifications(prev =>
+        prev.map(n => ({ ...n, read_at: n.read_at || new Date().toISOString() }))
+      );
+      setUnreadCount(0);
+    } catch {
+      // Silently fail
+    } finally {
+      setNotifLoading(false);
+    }
+  }, []);
+
+  const handleDeleteNotification = useCallback(async (id: string) => {
+    try {
+      await apiClient.deleteNotification(id);
+      const removed = notifications.find(n => n.id === id);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      if (removed && !removed.read_at) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch {
+      // Silently fail
+    }
+  }, [notifications]);
 
   return (
     <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-20">
@@ -171,8 +229,8 @@ export default function Header({ onLogout }: HeaderProps) {
                   className="text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white"
                 />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
-                    {unreadCount}
+                  <span className="absolute top-1 right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full animate-pulse">
+                    {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
               </button>
@@ -192,40 +250,75 @@ export default function Header({ onLogout }: HeaderProps) {
                   </div>
 
                   <div className="max-h-96 overflow-y-auto">
-                    {mockNotifications.length > 0 ? (
-                      mockNotifications.map((notif) => (
+                    {notifications.length > 0 ? (
+                      notifications.map((notif) => (
                         <div
                           key={notif.id}
-                          className={`p-4 border-b border-slate-100 dark:border-slate-700 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors ${
-                            notif.unread
+                          className={`p-4 border-b border-slate-100 dark:border-slate-700 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group/item ${
+                            !notif.read_at
                               ? getNotificationColor(notif.type)
                               : ''
                           }`}
                           role="article"
                         >
-                          <p className="text-sm font-medium text-slate-900 dark:text-white">
-                            {notif.message}
-                          </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            {notif.time}
-                          </p>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-0.5">
+                                {notif.title}
+                              </p>
+                              <p className="text-sm text-slate-900 dark:text-white">
+                                {notif.message}
+                              </p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                {formatTimeAgo(notif.created_at)}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity flex-shrink-0">
+                              {!notif.read_at && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMarkAsRead(notif.id);
+                                  }}
+                                  className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-400"
+                                  title="Marcar como lida"
+                                >
+                                  <Check size={14} />
+                                </button>
+                              )}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteNotification(notif.id);
+                                }}
+                                className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 dark:hover:text-red-400"
+                                title="Excluir"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       ))
                     ) : (
                       <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+                        <Bell size={24} className="mx-auto mb-2 text-slate-300 dark:text-slate-600" />
                         <p className="text-sm">Nenhuma notificação</p>
                       </div>
                     )}
                   </div>
 
-                  <div className="p-3 border-t border-slate-200 dark:border-slate-700">
-                    <button
-                      onClick={handleMarkAllAsRead}
-                      className="w-full text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium py-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                    >
-                      Marcar todas como lidas
-                    </button>
-                  </div>
+                  {unreadCount > 0 && (
+                    <div className="p-3 border-t border-slate-200 dark:border-slate-700">
+                      <button
+                        onClick={handleMarkAllAsRead}
+                        disabled={notifLoading}
+                        className="w-full text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium py-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors disabled:opacity-50"
+                      >
+                        {notifLoading ? 'Marcando...' : 'Marcar todas como lidas'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

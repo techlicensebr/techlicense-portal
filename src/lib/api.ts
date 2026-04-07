@@ -131,6 +131,17 @@ export interface ContactData {
   };
 }
 
+export interface NotificationData {
+  id: string;
+  type: 'info' | 'warning' | 'success' | 'error';
+  title: string;
+  message: string;
+  resource_type?: string;
+  resource_id?: string;
+  read_at?: string | null;
+  created_at: string;
+}
+
 export interface ChannelConfigData {
   id: string;
   type: 'whatsapp' | 'telegram' | 'instagram' | 'messenger';
@@ -1193,6 +1204,58 @@ class APIClient {
     try {
       const response = await this.client.post(`${V1_BASE_URL}/webhooks/process-retries`);
       return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // ============ NOTIFICATIONS ENDPOINTS ============
+
+  async getNotifications(params?: { page?: number; per_page?: number; unread_only?: boolean }) {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/notifications`, { params });
+      const body = response.data;
+      return {
+        notifications: (body.data || []) as NotificationData[],
+        total: body.meta?.total ?? 0,
+        unread_count: body.meta?.unread_count ?? 0,
+      };
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getUnreadCount() {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/notifications/unread-count`);
+      return (response.data?.data?.unread_count ?? 0) as number;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async markNotificationRead(id: string) {
+    try {
+      const response = await this.client.patch(`${V1_BASE_URL}/notifications/${id}/read`);
+      return response.data?.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async markAllNotificationsRead() {
+    try {
+      const response = await this.client.patch(`${V1_BASE_URL}/notifications/read-all`);
+      return response.data?.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async deleteNotification(id: string) {
+    try {
+      const response = await this.client.delete(`${V1_BASE_URL}/notifications/${id}`);
+      return response.data?.data;
     } catch (error) {
       throw this.handleError(error);
     }
