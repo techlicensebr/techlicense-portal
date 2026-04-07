@@ -119,11 +119,33 @@ class APIClient {
       },
     });
 
-    // Response interceptor - NO automatic redirect on 401
-    // Each caller handles 401 appropriately (AuthContext, login page, etc.)
+    // Response interceptor — auto-refresh on 401
     this.client.interceptors.response.use(
       response => response,
-      error => Promise.reject(error)
+      async (error) => {
+        const originalRequest = error.config;
+
+        // If 401 and not already retrying and not an auth endpoint
+        if (
+          error.response?.status === 401 &&
+          !originalRequest._retry &&
+          !originalRequest.url?.includes('/v1/auth/')
+        ) {
+          originalRequest._retry = true;
+
+          try {
+            // Try to refresh the session
+            await this.client.post('/v1/auth/refresh');
+            // Retry original request with new cookie
+            return this.client(originalRequest);
+          } catch {
+            // Refresh failed — session expired
+            return Promise.reject(error);
+          }
+        }
+
+        return Promise.reject(error);
+      }
     );
   }
 
@@ -167,18 +189,18 @@ class APIClient {
     }
   }
 
-  async verifyMagicLink(token: string) {
+  async verifyOtp(email: string, token: string) {
     try {
-      const response = await this.client.post('/v1/auth/verify-magic-link', { token });
+      const response = await this.client.post('/v1/auth/verify-otp', { email, token });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
     }
   }
 
-  async loginGoogle(googleToken: string) {
+  async exchangeCode(code: string) {
     try {
-      const response = await this.client.post('/v1/auth/google', { token: googleToken });
+      const response = await this.client.post('/v1/auth/callback', { code });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -190,7 +212,6 @@ class APIClient {
       const response = await this.client.get('/v1/auth/me');
       return response.data;
     } catch {
-      // 401 or network error (CORS block) = no session, return null silently
       return null;
     }
   }
@@ -199,7 +220,38 @@ class APIClient {
     try {
       await this.client.post('/v1/auth/logout');
     } catch {
-      // Ignore server errors on logout
+      // Ignore errors on logout
+    }
+  }
+
+  async forgotPassword(email: string) {
+    try {
+      const response = await this.client.post('/v1/auth/forgot-password', { email });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async resetPassword(accessToken: string, refreshToken: string, password: string) {
+    try {
+      const response = await this.client.post('/v1/auth/reset-password', {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        password,
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async register(data: { name: string; email: string; password: string; company_name: string }) {
+    try {
+      const response = await this.client.post('/v1/auth/register', data);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
     }
   }
 
@@ -791,14 +843,6 @@ class APIClient {
     }
   }
 
-  async register(data: { name: string; email: string; password: string; company_name: string; plan_slug?: string }) {
-    try {
-      const response = await this.client.post('/v1/auth/register', data);
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
 }
 
 export const apiClient = new APIClient();

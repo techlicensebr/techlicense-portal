@@ -135,10 +135,9 @@ function RegisterForm(): React.ReactElement {
         email: formData.email,
         password: formData.password,
         company_name: formData.company_name,
-        plan_slug: formData.plan,
       });
 
-      if (response.token && response.user) {
+      if (response.user) {
         // Redirect to dashboard on successful registration
         router.push('/');
       } else {
