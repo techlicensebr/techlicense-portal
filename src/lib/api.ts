@@ -78,6 +78,13 @@ export interface AnalyticsData {
   active_users: number;
   avg_response_time: number;
   satisfaction_score: number;
+  total_tokens: number;
+  plan?: string;
+  limits?: {
+    messages_month?: number;
+    tokens_month?: number;
+    storage_bytes?: number;
+  };
 }
 
 export interface ApiKeyData {
