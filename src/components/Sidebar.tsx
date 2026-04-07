@@ -71,6 +71,11 @@ const navItems: NavItem[] = [
     icon: <Smartphone size={20} />,
   },
   {
+    label: 'Time',
+    href: '/team',
+    icon: <Users size={20} />,
+  },
+  {
     label: 'Cobrança',
     href: '/cobranca',
     icon: <CreditCard size={20} />,

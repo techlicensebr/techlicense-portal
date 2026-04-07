@@ -19,7 +19,7 @@ export default function RootLayout({
   const pathname = usePathname();
 
   // Rotas onde não mostramos Sidebar e Header
-  const isLoginPage = pathname === '/login' || pathname === '/verify-magic-link';
+  const isLoginPage = pathname === '/login' || pathname === '/registrar' || pathname === '/verify-magic-link';
 
   return (
     <html lang="pt-BR" suppressHydrationWarning>
