@@ -144,7 +144,7 @@ export default function ChavedaAPIPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {apiKeys.map((apiKey) => (
+            {apiKeys.map((apiKey: ApiKeyData) => (
               <div
                 key={apiKey.id}
                 className="flex items-start justify-between p-4 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"

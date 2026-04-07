@@ -20,7 +20,8 @@ export interface BotData {
   description: string;
   status: 'active' | 'inactive' | 'archived';
   avatar_url?: string;
-  model: string;
+  model?: string;
+  ai_model?: string;
   temperature: number;
   max_tokens: number;
   created_at: string;
@@ -30,11 +31,17 @@ export interface BotData {
 export interface ConversationData {
   id: string;
   bot_id: string;
-  user_id: string;
+  contact_id?: string;
+  user_id?: string;
+  channel?: string;
   status: 'active' | 'closed' | 'archived';
-  started_at: string;
-  ended_at?: string;
+  started_at?: string;
+  first_message_at?: string;
+  last_message_at?: string;
+  closed_at?: string;
   message_count: number;
+  total_tokens?: number;
+  contacts?: { name?: string; email?: string; phone?: string };
 }
 
 export interface MessageData {
@@ -261,7 +268,8 @@ class APIClient {
   async getBots(params?: PaginationParams) {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/bots`, { params });
-      return response.data as { bots: BotData[]; total: number };
+      const body = response.data;
+      return { bots: body.data || [], total: body.meta?.total ?? 0 };
     } catch (error) {
       throw this.handleError(error);
     }
@@ -270,7 +278,7 @@ class APIClient {
   async getBot(id: string) {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/bots/${id}`);
-      return response.data as BotData;
+      return (response.data?.data || response.data) as BotData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -279,7 +287,7 @@ class APIClient {
   async createBot(data: Partial<BotData>) {
     try {
       const response = await this.client.post(`${V1_BASE_URL}/bots`, data);
-      return response.data as BotData;
+      return (response.data?.data || response.data) as BotData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -288,7 +296,7 @@ class APIClient {
   async updateBot(id: string, data: Partial<BotData>) {
     try {
       const response = await this.client.patch(`${V1_BASE_URL}/bots/${id}`, data);
-      return response.data as BotData;
+      return (response.data?.data || response.data) as BotData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -305,9 +313,8 @@ class APIClient {
 
   async toggleBotStatus(id: string) {
     try {
-      // NOTE: Route does not exist in API yet - needs implementation
       const response = await this.client.patch(`${V1_BASE_URL}/bots/${id}/toggle-status`);
-      return response.data as BotData;
+      return (response.data?.data || response.data) as BotData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -319,7 +326,8 @@ class APIClient {
   async getConversations(params?: PaginationParams & { bot_id?: string; status?: string }) {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/conversations`, { params });
-      return response.data as { conversations: ConversationData[]; total: number };
+      const body = response.data;
+      return { conversations: body.data || [], total: body.meta?.total ?? 0 };
     } catch (error) {
       throw this.handleError(error);
     }
@@ -328,7 +336,7 @@ class APIClient {
   async getConversation(id: string) {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/conversations/${id}`);
-      return response.data as ConversationData;
+      return (response.data?.data || response.data) as ConversationData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -336,9 +344,9 @@ class APIClient {
 
   async getConversationMessages(id: string, params?: PaginationParams) {
     try {
-      // NOTE: Route does not exist in API yet - messages are returned with conversation detail
       const response = await this.client.get(`${V1_BASE_URL}/conversations/${id}/messages`, { params });
-      return response.data as { messages: MessageData[]; total: number };
+      const body = response.data;
+      return { messages: body.data || [], total: body.meta?.total ?? 0 };
     } catch (error) {
       throw this.handleError(error);
     }
@@ -346,9 +354,8 @@ class APIClient {
 
   async sendMessage(conversationId: string, content: string) {
     try {
-      // NOTE: Route does not exist in API yet - needs implementation
       const response = await this.client.post(`${V1_BASE_URL}/conversations/${conversationId}/messages`, { content });
-      return response.data as MessageData;
+      return (response.data?.data || response.data) as MessageData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -360,7 +367,12 @@ class APIClient {
   async getKnowledgeBase(botId: string, params?: PaginationParams) {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/knowledge/${botId}`, { params });
-      return response.data as { documents: KnowledgeDocData[]; total: number };
+      const body = response.data;
+      // API returns { data: knowledgeBase } for single KB or { data: [...documents] }
+      if (body.data && Array.isArray(body.data)) {
+        return { documents: body.data, total: body.meta?.total ?? body.data.length };
+      }
+      return { documents: body.documents || [], total: body.total ?? 0 };
     } catch (error) {
       throw this.handleError(error);
     }
@@ -375,7 +387,7 @@ class APIClient {
           'Content-Type': 'multipart/form-data',
         },
       });
-      return response.data as KnowledgeDocData;
+      return (response.data?.data || response.data) as KnowledgeDocData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -392,11 +404,11 @@ class APIClient {
 
   async searchKnowledgeBase(botId: string, query: string) {
     try {
-      // NOTE: Route does not exist in API yet - needs implementation
       const response = await this.client.get(`${V1_BASE_URL}/knowledge/${botId}/search`, {
         params: { query },
       });
-      return response.data as { documents: KnowledgeDocData[] };
+      const body = response.data;
+      return { documents: body.data || body.documents || [] };
     } catch (error) {
       throw this.handleError(error);
     }
@@ -426,9 +438,9 @@ class APIClient {
     interval?: 'day' | 'week' | 'month';
   }) {
     try {
-      // NOTE: Route does not exist in API yet - needs implementation
       const response = await this.client.get(`${V1_BASE_URL}/analytics/conversations-chart`, { params });
-      return response.data;
+      const body = response.data;
+      return { data: body.data || [] };
     } catch (error) {
       throw this.handleError(error);
     }
@@ -436,7 +448,6 @@ class APIClient {
 
   async getBotsPerformance(params?: PaginationParams) {
     try {
-      // NOTE: Route does not exist in API yet - needs implementation
       const response = await this.client.get(`${V1_BASE_URL}/analytics/bots-performance`, { params });
       return response.data;
     } catch (error) {
@@ -468,7 +479,8 @@ class APIClient {
   async getApiKeys(params?: PaginationParams) {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/api-keys`, { params });
-      return response.data as { keys: ApiKeyData[]; total: number };
+      const body = response.data;
+      return { keys: body.data || [], total: body.meta?.total ?? (body.data?.length || 0) };
     } catch (error) {
       throw this.handleError(error);
     }
@@ -477,7 +489,7 @@ class APIClient {
   async createApiKey(name: string) {
     try {
       const response = await this.client.post(`${V1_BASE_URL}/api-keys`, { name });
-      return response.data as ApiKeyData;
+      return (response.data?.data || response.data) as ApiKeyData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -494,9 +506,8 @@ class APIClient {
 
   async toggleApiKey(id: string) {
     try {
-      // NOTE: Route does not exist in API yet - needs implementation
       const response = await this.client.patch(`${V1_BASE_URL}/api-keys/${id}/toggle`);
-      return response.data as ApiKeyData;
+      return (response.data?.data || response.data) as ApiKeyData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -508,7 +519,8 @@ class APIClient {
   async getWebhooks(params?: PaginationParams) {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/webhooks`, { params });
-      return response.data as { webhooks: WebhookData[]; total: number };
+      const body = response.data;
+      return { webhooks: body.data || [], total: body.meta?.total ?? 0 };
     } catch (error) {
       throw this.handleError(error);
     }
@@ -517,7 +529,7 @@ class APIClient {
   async createWebhook(data: Partial<WebhookData>) {
     try {
       const response = await this.client.post(`${V1_BASE_URL}/webhooks`, data);
-      return response.data as WebhookData;
+      return (response.data?.data || response.data) as WebhookData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -526,7 +538,7 @@ class APIClient {
   async updateWebhook(id: string, data: Partial<WebhookData>) {
     try {
       const response = await this.client.put(`${V1_BASE_URL}/webhooks/${id}`, data);
-      return response.data as WebhookData;
+      return (response.data?.data || response.data) as WebhookData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -565,7 +577,8 @@ class APIClient {
   async getContacts(params?: PaginationParams) {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/contacts`, { params });
-      return response.data as { contacts: ContactData[]; total: number };
+      const body = response.data;
+      return { contacts: body.data || [], total: body.meta?.total ?? 0 };
     } catch (error) {
       throw this.handleError(error);
     }
@@ -574,7 +587,7 @@ class APIClient {
   async getContact(id: string) {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/contacts/${id}`);
-      return response.data as ContactData;
+      return (response.data?.data || response.data) as ContactData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -583,7 +596,7 @@ class APIClient {
   async createContact(data: Partial<ContactData>) {
     try {
       const response = await this.client.post(`${V1_BASE_URL}/contacts`, data);
-      return response.data as ContactData;
+      return (response.data?.data || response.data) as ContactData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -592,7 +605,7 @@ class APIClient {
   async updateContact(id: string, data: Partial<ContactData>) {
     try {
       const response = await this.client.put(`${V1_BASE_URL}/contacts/${id}`, data);
-      return response.data as ContactData;
+      return (response.data?.data || response.data) as ContactData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -604,7 +617,7 @@ class APIClient {
   async setupWhatsApp(data: { phone_number: string; access_token: string }) {
     try {
       const response = await this.client.post(`${V1_BASE_URL}/channels/whatsapp/setup`, data);
-      return response.data as ChannelConfigData;
+      return (response.data?.data || response.data) as ChannelConfigData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -634,7 +647,7 @@ class APIClient {
   async setupTelegram(data: { bot_token: string }) {
     try {
       const response = await this.client.post(`${V1_BASE_URL}/channels/telegram/setup`, data);
-      return response.data as ChannelConfigData;
+      return (response.data?.data || response.data) as ChannelConfigData;
     } catch (error) {
       throw this.handleError(error);
     }
