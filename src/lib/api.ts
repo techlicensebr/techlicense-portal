@@ -330,6 +330,26 @@ class APIClient {
     }
   }
 
+  // ============ WIDGET CONFIGURATION ============
+
+  async getWidgetConfig(botId: string) {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/bots/${botId}/widget`);
+      return response.data?.data || response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async updateWidgetConfig(botId: string, config: Record<string, unknown>) {
+    try {
+      const response = await this.client.patch(`${V1_BASE_URL}/bots/${botId}/widget`, config);
+      return response.data?.data || response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   // ============ CONVERSATIONS ENDPOINTS ============
   // API: GET /v1/conversations, GET /v1/conversations/:id, PATCH /v1/conversations/:id
 
