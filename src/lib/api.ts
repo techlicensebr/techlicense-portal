@@ -900,6 +900,73 @@ class APIClient {
     }
   }
 
+  // =====================================================
+  // Team Management
+  // =====================================================
+
+  async getTeamMembers() {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/team/members`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getTeamInvitations() {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/team/invitations`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async inviteTeamMember(data: { email: string; role: string }) {
+    try {
+      const response = await this.client.post(`${V1_BASE_URL}/team/invite`, data);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async updateTeamMember(userId: string, data: { role?: string; is_active?: boolean }) {
+    try {
+      const response = await this.client.patch(`${V1_BASE_URL}/team/members/${userId}`, data);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async removeTeamMember(userId: string) {
+    try {
+      const response = await this.client.delete(`${V1_BASE_URL}/team/members/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async revokeInvitation(invitationId: string) {
+    try {
+      const response = await this.client.delete(`${V1_BASE_URL}/team/invitations/${invitationId}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async acceptInvite(token: string) {
+    try {
+      const response = await this.client.post(`${V1_BASE_URL}/team/accept-invite/${token}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
 }
 
 export const apiClient = new APIClient();
