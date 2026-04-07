@@ -258,7 +258,7 @@ export default function TeamPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [tab, setTab] = useState<'members' | 'invitations'>('members');
 
-  const currentUserRole = (user as Record<string, string>)?.role || 'viewer';
+  const currentUserRole = user?.role || 'viewer';
   const canManage = currentUserRole === 'owner' || currentUserRole === 'admin';
 
   const loadData = useCallback(async () => {
@@ -384,7 +384,7 @@ export default function TeamPage() {
         <div className="space-y-3">
           {members.map(member => {
             const roleConfig = ROLE_CONFIG[member.role] || ROLE_CONFIG.agent;
-            const isCurrentUser = (user as Record<string, string>)?.id === member.id;
+            const isCurrentUser = user?.id === member.id;
             const canEditMember = canManage && !isCurrentUser && member.role !== 'owner';
 
             return (
