@@ -19,33 +19,41 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   loginMagicLink: (email: string) => Promise<void>;
-  loginGoogle: (googleToken: string) => Promise<void>;
+  exchangeCode: (code: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Flag cookie for Next.js SSR middleware (non-HttpOnly, just for redirect logic)
+function setFlagCookie() {
+  document.cookie = 'tl_token=active; path=/; max-age=3600; SameSite=Lax';
+}
+
+function clearFlagCookie() {
+  document.cookie = 'tl_token=; path=/; max-age=0';
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const isAuthenticated = !!user;
 
-  // On mount: check if session is valid by calling /me
+  // Check session on mount
   const refreshUser = useCallback(async () => {
     try {
       const data = await apiClient.getCurrentUser();
       if (data?.user) {
         setUser(data.user);
-        // Set a flag cookie for Next.js middleware (non-HttpOnly, just for SSR redirect logic)
-        document.cookie = 'tl_token=active; path=/; max-age=86400; SameSite=Lax';
+        setFlagCookie();
       } else {
         setUser(null);
-        document.cookie = 'tl_token=; path=/; max-age=0';
+        clearFlagCookie();
       }
     } catch {
       setUser(null);
-      document.cookie = 'tl_token=; path=/; max-age=0';
+      clearFlagCookie();
     }
   }, []);
 
@@ -59,8 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await apiClient.login(email, password);
       if (data?.user) {
         setUser(data.user);
-        // Set flag cookie for Next.js middleware
-        document.cookie = 'tl_token=active; path=/; max-age=86400; SameSite=Lax';
+        setFlagCookie();
       } else {
         throw new Error('Resposta inválida do servidor');
       }
@@ -84,16 +91,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const loginGoogle = useCallback(async (googleToken: string) => {
+  const exchangeCode = useCallback(async (code: string) => {
     setLoading(true);
     try {
-      const data = await apiClient.loginGoogle(googleToken);
+      const data = await apiClient.exchangeCode(code);
       if (data?.user) {
         setUser(data.user);
-        document.cookie = 'tl_token=active; path=/; max-age=86400; SameSite=Lax';
+        setFlagCookie();
       }
     } catch (error) {
-      console.error('Erro de login com Google:', error);
+      console.error('Erro na autenticação:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -106,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await apiClient.logout();
     } finally {
       setUser(null);
-      document.cookie = 'tl_token=; path=/; max-age=0';
+      clearFlagCookie();
       setLoading(false);
     }
   }, []);
@@ -117,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated,
     login,
     loginMagicLink,
-    loginGoogle,
+    exchangeCode,
     logout,
     refreshUser,
   };
