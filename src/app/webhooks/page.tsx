@@ -114,7 +114,7 @@ export default function WebhooksPage() {
   };
 
   const handleToggleStatus = async (id: string) => {
-    const webhook = webhooks.find((w) => w.id === id);
+    const webhook = webhooks.find((w: WebhookData) => w.id === id);
     if (webhook) {
       try {
         await updateMutation.mutate({
@@ -203,7 +203,7 @@ export default function WebhooksPage() {
             </button>
           </div>
         ) : (
-          webhooks.map((webhook) => (
+          webhooks.map((webhook: WebhookData) => (
             <div key={webhook.id} className="card dark:bg-slate-800 dark:border-slate-700">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">

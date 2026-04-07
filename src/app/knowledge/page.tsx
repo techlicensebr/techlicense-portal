@@ -42,11 +42,11 @@ export default function BaseConhecimentoPage() {
     (docId) => apiClient.deleteDocument(botId, docId)
   );
 
-  const filteredDocuments = documents.filter((doc) =>
+  const filteredDocuments = documents.filter((doc: KnowledgeDocData) =>
     doc.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalTokens = documents.reduce((sum, doc) => sum + (doc.size || 0), 0);
+  const totalTokens = documents.reduce((sum: number, doc: KnowledgeDocData) => sum + (doc.size || 0), 0);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -282,7 +282,7 @@ export default function BaseConhecimentoPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredDocuments.map((doc) => (
+                {filteredDocuments.map((doc: KnowledgeDocData) => (
                   <tr
                     key={doc.id}
                     className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"

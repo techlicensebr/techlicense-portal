@@ -170,7 +170,7 @@ export default function BotsPage() {
                       </div>
                       <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                         <Zap size={16} className="text-yellow-600 dark:text-yellow-400" />
-                        <span>Modelo: {bot.model}</span>
+                        <span>Modelo: {(bot as any).ai_model || bot.model}</span>
                       </div>
                     </div>
                   </div>

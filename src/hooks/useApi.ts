@@ -24,20 +24,27 @@ export function useApi<T = unknown>(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const isMountedRef = useRef(true);
+  const fetcherRef = useRef(fetcher);
+  const optionsRef = useRef(options);
+  const hasFetchedRef = useRef(false);
+
+  // Keep refs up-to-date without triggering re-renders
+  fetcherRef.current = fetcher;
+  optionsRef.current = options;
 
   const refetch = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const result = await fetcher();
+      const result = await fetcherRef.current();
 
       if (isMountedRef.current) {
         setData(result);
         setError(null);
 
-        if (options?.onSuccess) {
-          options.onSuccess(result);
+        if (optionsRef.current?.onSuccess) {
+          optionsRef.current.onSuccess(result);
         }
       }
     } catch (err) {
@@ -51,8 +58,8 @@ export function useApi<T = unknown>(
         setError(apiError);
         setData(null);
 
-        if (options?.onError) {
-          options.onError(apiError);
+        if (optionsRef.current?.onError) {
+          optionsRef.current.onError(apiError);
         }
       }
     } finally {
@@ -60,7 +67,7 @@ export function useApi<T = unknown>(
         setLoading(false);
       }
     }
-  }, [fetcher, options]);
+  }, []); // No dependencies — uses refs
 
   const mutate = useCallback((newData: T) => {
     if (isMountedRef.current) {
@@ -76,16 +83,19 @@ export function useApi<T = unknown>(
     }
   }, []);
 
-  // Auto-fetch na montagem se habilitado
+  // Auto-fetch on mount if enabled (runs only once)
   useEffect(() => {
-    if (options?.autoFetch !== false) {
+    isMountedRef.current = true;
+
+    if (optionsRef.current?.autoFetch !== false && !hasFetchedRef.current) {
+      hasFetchedRef.current = true;
       refetch();
     }
 
     return () => {
       isMountedRef.current = false;
     };
-  }, [options?.autoFetch, refetch]);
+  }, [refetch]);
 
   return {
     data,
@@ -106,6 +116,12 @@ export function useApiMutation<T = unknown, P = unknown>(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const isMountedRef = useRef(true);
+  const fetcherRef = useRef(fetcher);
+  const optionsRef = useRef(options);
+
+  // Keep refs up-to-date
+  fetcherRef.current = fetcher;
+  optionsRef.current = options;
 
   const mutate = useCallback(
     async (payload: P) => {
@@ -113,14 +129,14 @@ export function useApiMutation<T = unknown, P = unknown>(
       setError(null);
 
       try {
-        const result = await fetcher(payload);
+        const result = await fetcherRef.current(payload);
 
         if (isMountedRef.current) {
           setData(result);
           setError(null);
 
-          if (options?.onSuccess) {
-            options.onSuccess(result);
+          if (optionsRef.current?.onSuccess) {
+            optionsRef.current.onSuccess(result);
           }
         }
 
@@ -136,8 +152,8 @@ export function useApiMutation<T = unknown, P = unknown>(
           setError(apiError);
           setData(null);
 
-          if (options?.onError) {
-            options.onError(apiError);
+          if (optionsRef.current?.onError) {
+            optionsRef.current.onError(apiError);
           }
         }
 
@@ -148,7 +164,7 @@ export function useApiMutation<T = unknown, P = unknown>(
         }
       }
     },
-    [fetcher, options]
+    [] // No dependencies — uses refs
   );
 
   const reset = useCallback(() => {
@@ -160,6 +176,7 @@ export function useApiMutation<T = unknown, P = unknown>(
   }, []);
 
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
     };

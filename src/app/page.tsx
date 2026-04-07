@@ -14,7 +14,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { useApi } from '@/hooks/useApi';
-import { apiClient } from '@/lib/api';
+import { apiClient, ConversationData } from '@/lib/api';
 
 function SkeletonLoader() {
   return (
@@ -224,7 +224,7 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {conversationsData.conversations.slice(0, 5).map((conv) => {
+                {conversationsData.conversations.slice(0, 5).map((conv: ConversationData) => {
                   const statusMap: Record<string, { badge: string; label: string }> = {
                     active: { badge: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300', label: 'Ativo' },
                     closed: { badge: 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300', label: 'Concluído' },
@@ -234,7 +234,7 @@ export default function Dashboard() {
 
                   return (
                     <tr key={conv.id} className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                      <td className="py-3 px-4 text-sm font-medium text-slate-900 dark:text-white">{conv.user_id || 'Usuário'}</td>
+                      <td className="py-3 px-4 text-sm font-medium text-slate-900 dark:text-white">{conv.contacts?.name || conv.contact_id || 'Usuário'}</td>
                       <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-400">{conv.bot_id}</td>
                       <td className="py-3 px-4 text-sm">
                         <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${statusInfo.badge}`}>
@@ -242,7 +242,7 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td className="py-3 px-4 text-sm text-slate-600 dark:text-slate-400">({conv.message_count} mensagens)</td>
-                      <td className="py-3 px-4 text-sm text-slate-500 dark:text-slate-500">{new Date(conv.started_at).toLocaleTimeString('pt-BR')}</td>
+                      <td className="py-3 px-4 text-sm text-slate-500 dark:text-slate-500">{new Date(conv.last_message_at || conv.first_message_at || conv.started_at || '').toLocaleTimeString('pt-BR')}</td>
                     </tr>
                   );
                 })}
