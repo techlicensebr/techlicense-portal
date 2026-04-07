@@ -967,6 +967,101 @@ class APIClient {
     }
   }
 
+  // =====================================================
+  // Agent Handoff
+  // =====================================================
+
+  async getHandoffQueues() {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/handoff/queues`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async createHandoffQueue(data: { name: string; description?: string; priority?: number; max_concurrent?: number; auto_assign?: boolean }) {
+    try {
+      const response = await this.client.post(`${V1_BASE_URL}/handoff/queues`, data);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async updateHandoffQueue(queueId: string, data: Record<string, unknown>) {
+    try {
+      const response = await this.client.patch(`${V1_BASE_URL}/handoff/queues/${queueId}`, data);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async deleteHandoffQueue(queueId: string) {
+    try {
+      const response = await this.client.delete(`${V1_BASE_URL}/handoff/queues/${queueId}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getHandoffRequests(status?: string) {
+    try {
+      const params = status ? { status } : {};
+      const response = await this.client.get(`${V1_BASE_URL}/handoff/requests`, { params });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async createHandoffRequest(data: { conversation_id: string; bot_id: string; queue_id?: string; trigger?: string; trigger_reason?: string; priority?: number }) {
+    try {
+      const response = await this.client.post(`${V1_BASE_URL}/handoff/requests`, data);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async assignHandoffRequest(requestId: string, userId?: string) {
+    try {
+      const response = await this.client.patch(`${V1_BASE_URL}/handoff/requests/${requestId}/assign`, userId ? { user_id: userId } : {});
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async resolveHandoffRequest(requestId: string, resolutionNotes?: string) {
+    try {
+      const response = await this.client.patch(`${V1_BASE_URL}/handoff/requests/${requestId}/resolve`, { resolution_notes: resolutionNotes });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getHandoffStats() {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/handoff/stats`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async toggleAvailability(isAvailable: boolean) {
+    try {
+      const response = await this.client.patch(`${V1_BASE_URL}/handoff/availability`, { is_available: isAvailable });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
 }
 
 export const apiClient = new APIClient();

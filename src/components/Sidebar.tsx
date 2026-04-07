@@ -21,6 +21,7 @@ import {
   ChevronDown,
   Shield,
   Users,
+  Headphones,
 } from 'lucide-react';
 
 interface NavItem {
@@ -69,6 +70,11 @@ const navItems: NavItem[] = [
     label: 'Canais',
     href: '/canais',
     icon: <Smartphone size={20} />,
+  },
+  {
+    label: 'Atendimento',
+    href: '/agent-workbench',
+    icon: <Headphones size={20} />,
   },
   {
     label: 'Time',
