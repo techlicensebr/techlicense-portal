@@ -22,6 +22,7 @@ import {
   Shield,
   Users,
   Headphones,
+  FileSearch,
 } from 'lucide-react';
 
 interface NavItem {
@@ -80,6 +81,11 @@ const navItems: NavItem[] = [
     label: 'Time',
     href: '/team',
     icon: <Users size={20} />,
+  },
+  {
+    label: 'Auditoria',
+    href: '/audit-logs',
+    icon: <FileSearch size={20} />,
   },
   {
     label: 'Cobrança',

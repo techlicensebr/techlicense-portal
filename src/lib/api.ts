@@ -1062,6 +1062,96 @@ class APIClient {
     }
   }
 
+  // =====================================================
+  // Audit Logs
+  // =====================================================
+
+  async getAuditLogs(params?: { page?: number; per_page?: number; action?: string; resource_type?: string; user_id?: string; from?: string; to?: string }) {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/audit`, { params });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getAuditActions() {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/audit/actions`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async exportAuditLogs(params?: { from?: string; to?: string }) {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/audit/export`, {
+        params,
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // =====================================================
+  // Data Export
+  // =====================================================
+
+  async exportConversations(params?: { from?: string; to?: string; bot_id?: string; status?: string }) {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/conversations/export`, {
+        params,
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // =====================================================
+  // Webhook Deliveries
+  // =====================================================
+
+  async getWebhookDeliveries(webhookId: string, params?: { page?: number; per_page?: number; status?: string }) {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/webhooks/${webhookId}/deliveries`, { params });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async getWebhookDeliveryDetail(webhookId: string, deliveryId: string) {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/webhooks/${webhookId}/deliveries/${deliveryId}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async retryWebhookDelivery(webhookId: string, deliveryId: string) {
+    try {
+      const response = await this.client.post(`${V1_BASE_URL}/webhooks/${webhookId}/deliveries/${deliveryId}/retry`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async processWebhookRetries() {
+    try {
+      const response = await this.client.post(`${V1_BASE_URL}/webhooks/process-retries`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
 }
 
 export const apiClient = new APIClient();
