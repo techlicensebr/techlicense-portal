@@ -3,7 +3,7 @@
 export const runtime = 'edge';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Save, Plus, Trash2, AlertCircle } from 'lucide-react';
 import { useApi, useApiMutation } from '@/hooks/useApi';
@@ -13,7 +13,9 @@ type TabType = 'geral' | 'modelo' | 'prompt' | 'protecoes' | 'canais';
 
 export default function BotDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const botId = params.id as string;
+  const isNew = botId === 'new';
 
   const [activeTab, setActiveTab] = useState<TabType>('geral');
   const [saved, setSaved] = useState(false);
@@ -22,10 +24,22 @@ export default function BotDetailPage() {
 
   const { data: bot, loading: botLoading, error: botError } = useApi(
     () => apiClient.getBot(botId),
-    { autoFetch: true }
+    { autoFetch: !isNew }
   );
 
-  const [config, setConfig] = useState<Partial<BotData>>({});
+  const [config, setConfig] = useState<Partial<BotData>>(
+    isNew
+      ? {
+          name: '',
+          description: '',
+          status: 'active',
+          ai_model: 'gpt-4o-mini',
+          system_prompt: 'Você é um assistente útil e prestativo.',
+          temperature: 0.7,
+          max_tokens: 1024,
+        }
+      : {}
+  );
 
   useEffect(() => {
     if (bot) {
@@ -34,16 +48,24 @@ export default function BotDetailPage() {
   }, [bot]);
 
   const { mutate: saveBotMutate, loading: saveLoading } = useApiMutation(
-    (data: Partial<BotData>) => apiClient.updateBot(botId, data),
+    (data: Partial<BotData>) =>
+      isNew ? apiClient.createBot(data) : apiClient.updateBot(botId, data),
     {
-      onSuccess: () => {
+      onSuccess: (result: any) => {
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
+        if (isNew && result?.id) {
+          router.push(`/bots/${result.id}`);
+        }
       },
     }
   );
 
   const handleSave = async () => {
+    if (isNew && !config.name?.trim()) {
+      alert('Por favor, preencha o nome do bot.');
+      return;
+    }
     try {
       await saveBotMutate(config);
     } catch (err) {
@@ -59,7 +81,7 @@ export default function BotDetailPage() {
     { id: 'canais', label: 'Canais' },
   ];
 
-  if (botLoading) {
+  if (!isNew && botLoading) {
     return (
       <div className="space-y-6">
         <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded w-1/4 animate-pulse" />
@@ -80,12 +102,12 @@ export default function BotDetailPage() {
 
       {/* Page header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{config.name || 'Carregando...'}</h1>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{isNew ? 'Novo Bot' : (config.name || 'Carregando...')}</h1>
         <p className="text-slate-600 dark:text-slate-400 mt-2">{config.description}</p>
       </div>
 
       {/* Error state */}
-      {botError && (
+      {!isNew && botError && (
         <div className="card bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-3">
           <AlertCircle className="text-red-600 dark:text-red-400" size={20} />
           <p className="text-sm text-red-700 dark:text-red-300">
@@ -158,15 +180,31 @@ export default function BotDetailPage() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Modelo</label>
                 <select
-                  value={config.model || 'gpt-4-turbo'}
-                  onChange={(e) => setConfig({ ...config, model: e.target.value })}
+                  value={(config as any).ai_model || 'gpt-4o-mini'}
+                  onChange={(e) => setConfig({ ...config, ai_model: e.target.value } as Partial<BotData>)}
                   className="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                 >
-                  <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                  <option value="gpt-4">GPT-4</option>
-                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                  <option value="claude-3-opus">Claude 3 Opus</option>
-                  <option value="claude-3-sonnet">Claude 3 Sonnet</option>
+                  <optgroup label="OpenAI">
+                    <option value="gpt-4o">GPT-4o</option>
+                    <option value="gpt-4o-mini">GPT-4o Mini</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                  </optgroup>
+                  <optgroup label="Anthropic">
+                    <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+                    <option value="claude-haiku">Claude 3.5 Haiku</option>
+                  </optgroup>
+                  <optgroup label="Meta">
+                    <option value="llama-3.1-70b">Llama 3.1 70B</option>
+                    <option value="llama-3.1-8b">Llama 3.1 8B</option>
+                  </optgroup>
+                  <optgroup label="Mistral">
+                    <option value="mistral-large">Mistral Large</option>
+                    <option value="mistral-7b">Mistral 7B</option>
+                  </optgroup>
+                  <optgroup label="Google">
+                    <option value="gemini-pro">Gemini Pro</option>
+                    <option value="gemini-flash">Gemini Flash</option>
+                  </optgroup>
                 </select>
               </div>
 
@@ -335,7 +373,7 @@ export default function BotDetailPage() {
             className="btn-primary flex items-center gap-2 disabled:opacity-50"
           >
             <Save size={18} />
-            {saveLoading ? 'Salvando...' : 'Salvar Alterações'}
+            {saveLoading ? 'Salvando...' : isNew ? 'Criar Bot' : 'Salvar Alterações'}
           </button>
         </div>
 

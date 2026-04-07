@@ -18,12 +18,22 @@ export interface BotData {
   id: string;
   name: string;
   description: string;
-  status: 'active' | 'inactive' | 'archived';
+  status: 'active' | 'inactive' | 'archived' | 'draft';
   avatar_url?: string;
   model?: string;
   ai_model?: string;
+  system_prompt?: string;
   temperature: number;
   max_tokens: number;
+  guardrails?: {
+    allowed_topics?: string[];
+    blocked_topics?: string[];
+    block_profanity?: boolean;
+    max_input_length?: number;
+  };
+  metadata?: Record<string, unknown>;
+  tenant_id?: string;
+  created_by?: string;
   created_at: string;
   updated_at: string;
 }
