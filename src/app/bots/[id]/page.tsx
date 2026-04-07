@@ -105,50 +105,25 @@ export default function BotDetailPage() {
     setChatLoading(true);
 
     try {
-      const token = document.cookie.match(/tl_session=([^;]+)/)?.[1];
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.chatbot.techlicense.com.br'}/v1/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          bot_id: botId,
-          message: msg,
-          ...(chatConversationId ? { conversation_id: chatConversationId } : {}),
-        }),
-      });
+      const data = await apiClient.chatPlayground(botId, msg, chatConversationId);
 
-      const data = await res.json();
-
-      if (data.data) {
-        if (data.data.conversation_id) {
-          setChatConversationId(data.data.conversation_id);
-        }
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            role: 'assistant',
-            content: data.data.content || 'Sem resposta',
-            model: data.data.model,
-            latency_ms: data.data.latency_ms,
-            usage: data.data.usage,
-          },
-        ]);
-      } else {
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            role: 'assistant',
-            content: `Erro: ${data.error?.message || JSON.stringify(data)}`,
-          },
-        ]);
+      if (data.conversation_id) {
+        setChatConversationId(data.conversation_id);
       }
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: data.content || 'Sem resposta',
+          model: data.model,
+          latency_ms: data.latency_ms,
+          usage: data.usage,
+        },
+      ]);
     } catch (err: any) {
       setChatMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: `Erro de conexão: ${err.message}` },
+        { role: 'assistant', content: `Erro: ${err.message || 'Falha na conexão'}` },
       ]);
     } finally {
       setChatLoading(false);
