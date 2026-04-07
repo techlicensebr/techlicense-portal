@@ -23,6 +23,7 @@ import {
   Users,
   Headphones,
   FileSearch,
+  UserCircle,
 } from 'lucide-react';
 
 interface NavItem {
@@ -71,6 +72,11 @@ const navItems: NavItem[] = [
     label: 'Canais',
     href: '/canais',
     icon: <Smartphone size={20} />,
+  },
+  {
+    label: 'Contatos',
+    href: '/contacts',
+    icon: <UserCircle size={20} />,
   },
   {
     label: 'Atendimento',
