@@ -184,6 +184,16 @@ export default function BotDetailPage() {
                   onChange={(e) => setConfig({ ...config, ai_model: e.target.value } as Partial<BotData>)}
                   className="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                 >
+                  <optgroup label="⚡ Groq (Grátis/Ultra-rápido)">
+                    <option value="groq-llama-3.3-70b">Llama 3.3 70B (Groq)</option>
+                    <option value="groq-llama-3.1-8b">Llama 3.1 8B (Groq)</option>
+                    <option value="groq-mixtral-8x7b">Mixtral 8x7B (Groq)</option>
+                  </optgroup>
+                  <optgroup label="🔷 Google Gemini">
+                    <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                  </optgroup>
                   <optgroup label="OpenAI">
                     <option value="gpt-4o">GPT-4o</option>
                     <option value="gpt-4o-mini">GPT-4o Mini</option>
@@ -193,11 +203,11 @@ export default function BotDetailPage() {
                     <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
                     <option value="claude-haiku">Claude 3.5 Haiku</option>
                   </optgroup>
-                  <optgroup label="Meta">
+                  <optgroup label="Meta (via Groq)">
                     <option value="llama-3.1-70b">Llama 3.1 70B</option>
                     <option value="llama-3.1-8b">Llama 3.1 8B</option>
                   </optgroup>
-                  <optgroup label="Mistral">
+                  <optgroup label="Mistral (via Groq)">
                     <option value="mistral-large">Mistral Large</option>
                     <option value="mistral-7b">Mistral 7B</option>
                   </optgroup>
