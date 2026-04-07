@@ -2,14 +2,22 @@
 
 export const runtime = 'edge';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Plus, Trash2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, AlertCircle, Send, Bot, User, Loader2 } from 'lucide-react';
 import { useApi, useApiMutation } from '@/hooks/useApi';
 import { apiClient, BotData } from '@/lib/api';
 
-type TabType = 'geral' | 'modelo' | 'prompt' | 'protecoes' | 'canais';
+type TabType = 'geral' | 'modelo' | 'prompt' | 'protecoes' | 'canais' | 'testar';
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  model?: string;
+  latency_ms?: number;
+  usage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number };
+}
 
 export default function BotDetailPage() {
   const params = useParams();
@@ -73,12 +81,87 @@ export default function BotDetailPage() {
     }
   };
 
+  // Chat playground state
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatConversationId, setChatConversationId] = useState<string | null>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = useCallback(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatMessages, scrollToBottom]);
+
+  const sendChatMessage = async () => {
+    const msg = chatInput.trim();
+    if (!msg || chatLoading || isNew) return;
+
+    setChatInput('');
+    setChatMessages((prev) => [...prev, { role: 'user', content: msg }]);
+    setChatLoading(true);
+
+    try {
+      const token = document.cookie.match(/tl_session=([^;]+)/)?.[1];
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.chatbot.techlicense.com.br'}/v1/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          bot_id: botId,
+          message: msg,
+          ...(chatConversationId ? { conversation_id: chatConversationId } : {}),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.data) {
+        if (data.data.conversation_id) {
+          setChatConversationId(data.data.conversation_id);
+        }
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: data.data.content || 'Sem resposta',
+            model: data.data.model,
+            latency_ms: data.data.latency_ms,
+            usage: data.data.usage,
+          },
+        ]);
+      } else {
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: `Erro: ${data.error?.message || JSON.stringify(data)}`,
+          },
+        ]);
+      }
+    } catch (err: any) {
+      setChatMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: `Erro de conexão: ${err.message}` },
+      ]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
   const tabs: { id: TabType; label: string }[] = [
     { id: 'geral', label: 'Geral' },
     { id: 'modelo', label: 'Modelo de IA' },
     { id: 'prompt', label: 'Prompt do Sistema' },
     { id: 'protecoes', label: 'Proteções' },
     { id: 'canais', label: 'Canais' },
+    ...(!isNew ? [{ id: 'testar' as TabType, label: '🧪 Testar' }] : []),
   ];
 
   if (!isNew && botLoading) {
@@ -316,6 +399,107 @@ export default function BotDetailPage() {
                     <span className="text-sm text-slate-900 dark:text-white">Nenhuma discussão fora do tópico</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Test/Playground tab */}
+          {activeTab === 'testar' && !isNew && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Modelo: <span className="font-semibold text-slate-900 dark:text-white">{(config as any).ai_model || 'N/A'}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setChatMessages([]);
+                    setChatConversationId(null);
+                  }}
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Nova conversa
+                </button>
+              </div>
+
+              {/* Chat messages area */}
+              <div className="border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 h-96 overflow-y-auto p-4 space-y-4">
+                {chatMessages.length === 0 && (
+                  <div className="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500">
+                    <Bot size={48} className="mb-3 opacity-50" />
+                    <p className="text-sm">Envie uma mensagem para testar seu bot</p>
+                    <p className="text-xs mt-1">As respostas serão geradas pelo modelo configurado</p>
+                  </div>
+                )}
+                {chatMessages.map((msg, i) => (
+                  <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    {msg.role === 'assistant' && (
+                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0">
+                        <Bot size={16} className="text-blue-600 dark:text-blue-400" />
+                      </div>
+                    )}
+                    <div
+                      className={`max-w-[80%] rounded-lg px-4 py-3 ${
+                        msg.role === 'user'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white'
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      {msg.role === 'assistant' && (msg.model || msg.latency_ms) && (
+                        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700 flex gap-3 text-xs text-slate-400 dark:text-slate-500">
+                          {msg.model && <span>Modelo: {msg.model}</span>}
+                          {msg.latency_ms && <span>{msg.latency_ms}ms</span>}
+                          {msg.usage && <span>{msg.usage.total_tokens} tokens</span>}
+                        </div>
+                      )}
+                    </div>
+                    {msg.role === 'user' && (
+                      <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                        <User size={16} className="text-slate-600 dark:text-slate-400" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {chatLoading && (
+                  <div className="flex gap-3 justify-start">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0">
+                      <Bot size={16} className="text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 flex items-center gap-2">
+                      <Loader2 size={16} className="animate-spin text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm text-slate-500 dark:text-slate-400">Gerando resposta...</span>
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Chat input */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendChatMessage();
+                    }
+                  }}
+                  placeholder="Digite uma mensagem para testar o bot..."
+                  className="input-field flex-1 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                  disabled={chatLoading}
+                />
+                <button
+                  onClick={sendChatMessage}
+                  disabled={chatLoading || !chatInput.trim()}
+                  className="btn-primary flex items-center gap-2 disabled:opacity-50"
+                >
+                  {chatLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                  Enviar
+                </button>
               </div>
             </div>
           )}
