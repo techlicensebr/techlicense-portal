@@ -423,7 +423,7 @@ class APIClient {
     end_date?: string;
   }) {
     try {
-      // NOTE: Route does not exist in API yet - use /v1/analytics/usage instead
+      // Uses /v1/analytics/usage for overview data
       const response = await this.client.get(`${V1_BASE_URL}/analytics/usage`, { params });
       return response.data as AnalyticsData;
     } catch (error) {
@@ -462,7 +462,7 @@ class APIClient {
     end_date?: string;
   }) {
     try {
-      // NOTE: Route does not exist in API yet - needs implementation
+      // Analytics export — may not be available in all API versions
       const response = await this.client.get(`${V1_BASE_URL}/analytics/export`, {
         params,
         responseType: 'blob',
@@ -514,7 +514,7 @@ class APIClient {
   }
 
   // ============ WEBHOOKS ENDPOINTS ============
-  // NOTE: Webhooks endpoints do not exist in API yet - needs implementation
+  // API: GET /v1/webhooks, POST /v1/webhooks, PATCH /v1/webhooks/:id, DELETE /v1/webhooks/:id
 
   async getWebhooks(params?: PaginationParams) {
     try {
@@ -537,7 +537,7 @@ class APIClient {
 
   async updateWebhook(id: string, data: Partial<WebhookData>) {
     try {
-      const response = await this.client.put(`${V1_BASE_URL}/webhooks/${id}`, data);
+      const response = await this.client.patch(`${V1_BASE_URL}/webhooks/${id}`, data);
       return (response.data?.data || response.data) as WebhookData;
     } catch (error) {
       throw this.handleError(error);
@@ -572,7 +572,7 @@ class APIClient {
   }
 
   // ============ CONTACTS ENDPOINTS ============
-  // NOTE: Contacts endpoints do not exist in API yet - needs implementation
+  // API: GET /v1/contacts, GET /v1/contacts/:id, PATCH /v1/contacts/:id
 
   async getContacts(params?: PaginationParams) {
     try {
@@ -604,7 +604,7 @@ class APIClient {
 
   async updateContact(id: string, data: Partial<ContactData>) {
     try {
-      const response = await this.client.put(`${V1_BASE_URL}/contacts/${id}`, data);
+      const response = await this.client.patch(`${V1_BASE_URL}/contacts/${id}`, data);
       return (response.data?.data || response.data) as ContactData;
     } catch (error) {
       throw this.handleError(error);
@@ -612,63 +612,52 @@ class APIClient {
   }
 
   // ============ CHANNELS ENDPOINTS ============
-  // NOTE: Channels endpoints do not exist in API yet - needs implementation
+  // API: GET /v1/channels/:botId, POST /v1/channels/:botId/whatsapp, POST /v1/channels/:botId/telegram, DELETE /v1/channels/:botId/:channelId
 
-  async setupWhatsApp(data: { phone_number: string; access_token: string }) {
+  async getChannels(botId: string) {
     try {
-      const response = await this.client.post(`${V1_BASE_URL}/channels/whatsapp/setup`, data);
+      const response = await this.client.get(`${V1_BASE_URL}/channels/${botId}`);
+      const body = response.data;
+      return { channels: body.data || [], total: body.data?.length || 0 };
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async connectWhatsApp(botId: string, data: { instance_name: string }) {
+    try {
+      const response = await this.client.post(`${V1_BASE_URL}/channels/${botId}/whatsapp`, data);
       return (response.data?.data || response.data) as ChannelConfigData;
     } catch (error) {
       throw this.handleError(error);
     }
   }
 
-  async getWhatsAppQR(botId: string) {
+  async connectTelegram(botId: string, data: { bot_token: string }) {
     try {
-      const response = await this.client.get(`${V1_BASE_URL}/channels/whatsapp/${botId}/qr`);
-      return response.data as { qr_code: string };
+      const response = await this.client.post(`${V1_BASE_URL}/channels/${botId}/telegram`, data);
+      return (response.data?.data || response.data) as ChannelConfigData;
     } catch (error) {
       throw this.handleError(error);
     }
   }
 
-  async sendWhatsAppMessage(botId: string, phoneNumber: string, message: string) {
+  async disconnectChannel(botId: string, channelId: string) {
     try {
-      const response = await this.client.post(`${V1_BASE_URL}/channels/whatsapp/${botId}/send`, {
-        phone_number: phoneNumber,
-        message,
-      });
+      const response = await this.client.delete(`${V1_BASE_URL}/channels/${botId}/${channelId}`);
       return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-
-  async setupTelegram(data: { bot_token: string }) {
-    try {
-      const response = await this.client.post(`${V1_BASE_URL}/channels/telegram/setup`, data);
-      return (response.data?.data || response.data) as ChannelConfigData;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-
-  async getTelegramWebhookUrl(botId: string) {
-    try {
-      const response = await this.client.get(`${V1_BASE_URL}/channels/telegram/${botId}/webhook`);
-      return response.data as { webhook_url: string };
     } catch (error) {
       throw this.handleError(error);
     }
   }
 
   // ============ SETTINGS ENDPOINTS ============
-  // NOTE: Settings endpoints do not exist in API yet - needs implementation
+  // API: GET /v1/settings, PATCH /v1/settings, POST /v1/settings/password, POST /v1/settings/2fa/*
 
   async getSettings() {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/settings`);
-      return response.data;
+      return (response.data?.data || response.data);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -676,8 +665,8 @@ class APIClient {
 
   async updateSettings(data: Record<string, unknown>) {
     try {
-      const response = await this.client.put(`${V1_BASE_URL}/settings`, data);
-      return response.data;
+      const response = await this.client.patch(`${V1_BASE_URL}/settings`, data);
+      return (response.data?.data || response.data);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -685,7 +674,7 @@ class APIClient {
 
   async changePassword(currentPassword: string, newPassword: string) {
     try {
-      const response = await this.client.post(`${V1_BASE_URL}/settings/change-password`, {
+      const response = await this.client.post(`${V1_BASE_URL}/settings/password`, {
         current_password: currentPassword,
         new_password: newPassword,
       });
@@ -695,9 +684,36 @@ class APIClient {
     }
   }
 
-  async toggle2FA(enabled: boolean) {
+  async enable2FA() {
     try {
-      const response = await this.client.post(`${V1_BASE_URL}/settings/toggle-2fa`, { enabled });
+      const response = await this.client.post(`${V1_BASE_URL}/settings/2fa/enable`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async confirm2FA(token: string) {
+    try {
+      const response = await this.client.post(`${V1_BASE_URL}/settings/2fa/confirm`, { token });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async disable2FA(token: string) {
+    try {
+      const response = await this.client.post(`${V1_BASE_URL}/settings/2fa/disable`, { token });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async get2FAStatus() {
+    try {
+      const response = await this.client.get(`${V1_BASE_URL}/settings/2fa/status`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -705,12 +721,12 @@ class APIClient {
   }
 
   // ============ BILLING ENDPOINTS ============
-  // NOTE: Billing endpoints do not exist in API yet - needs implementation
+  // API: GET /v1/billing/subscription, POST /v1/billing/checkout, POST /v1/billing/portal, GET /v1/billing/invoices, GET /v1/billing/usage
 
   async getSubscription() {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/billing/subscription`);
-      return response.data as BillingData;
+      return (response.data?.data || response.data) as BillingData;
     } catch (error) {
       throw this.handleError(error);
     }
@@ -719,7 +735,8 @@ class APIClient {
   async checkoutSubscription(planId: string) {
     try {
       const response = await this.client.post(`${V1_BASE_URL}/billing/checkout`, { plan_id: planId });
-      return response.data as { checkout_url: string };
+      const body = response.data;
+      return (body?.data || body) as { checkout_url: string };
     } catch (error) {
       throw this.handleError(error);
     }
@@ -727,8 +744,9 @@ class APIClient {
 
   async getPortalUrl() {
     try {
-      const response = await this.client.get(`${V1_BASE_URL}/billing/portal`);
-      return response.data as { portal_url: string };
+      const response = await this.client.post(`${V1_BASE_URL}/billing/portal`);
+      const body = response.data;
+      return (body?.data || body) as { portal_url: string };
     } catch (error) {
       throw this.handleError(error);
     }
@@ -737,7 +755,8 @@ class APIClient {
   async getInvoices(params?: PaginationParams) {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/billing/invoices`, { params });
-      return response.data;
+      const body = response.data;
+      return { invoices: body.data || [], total: body.meta?.total ?? 0 };
     } catch (error) {
       throw this.handleError(error);
     }
@@ -746,14 +765,14 @@ class APIClient {
   async getUsage(params?: { start_date?: string; end_date?: string }) {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/billing/usage`, { params });
-      return response.data;
+      return (response.data?.data || response.data);
     } catch (error) {
       throw this.handleError(error);
     }
   }
 
   // ============ MODELS ENDPOINTS ============
-  // NOTE: Models endpoints do not exist in API yet - needs implementation
+  // API: GET /v1/models, GET /v1/models/:id, POST /v1/models/:id/batch-pricing
 
   async listModels() {
     try {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   MessageCircle,
   Send,
@@ -13,38 +13,10 @@ import {
   Code,
 } from 'lucide-react';
 import { useApi, useApiMutation } from '@/hooks/useApi';
+import { apiClient, BotData } from '@/lib/api';
 
-interface ChannelStatus {
-  whatsapp: {
-    status: 'connected' | 'disconnected' | 'qr_code_pending';
-    instance_name?: string;
-    phone_number?: string;
-    messages_sent?: number;
-    messages_received?: number;
-    qr_code?: string;
-  };
-  telegram: {
-    status: 'connected' | 'disconnected';
-    bot_username?: string;
-    bot_token?: string;
-    messages_sent?: number;
-    messages_received?: number;
-  };
-  web_widget: {
-    status: 'active' | 'inactive';
-    embed_code?: string;
-    custom_color?: string;
-    greeting_message?: string;
-  };
-  api: {
-    status: 'active';
-    endpoint_url: string;
-    api_key?: string;
-  };
-}
 
 export default function CanaisPage() {
-  const [channels] = useState<ChannelStatus | null>(null);
   const [showQRCode, setShowQRCode] = useState(false);
   const [showBotToken, setShowBotToken] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -52,48 +24,76 @@ export default function CanaisPage() {
   const [telegramToken, setTelegramToken] = useState('');
   const [showWhatsappForm, setShowWhatsappForm] = useState(false);
   const [showTelegramForm, setShowTelegramForm] = useState(false);
+  const [selectedBotId, setSelectedBotId] = useState<string>('');
 
-  // Fetch channel status
-  const { data: channelData, refetch: refetchChannels } = useApi(
-    async () => {
-      // In a real app, this would fetch from the API
-      // For now, returning mock data structure
-      return {
-        whatsapp: {
-          status: 'qr_code_pending' as const,
-          instance_name: 'bot-support',
-          qr_code:
-            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-        },
-        telegram: {
-          status: 'disconnected' as const,
-          bot_token: '',
-        },
-        web_widget: {
-          status: 'active' as const,
-          embed_code:
-            '<script src="https://techlicense.com/widget.js" data-bot-id="your-bot-id"></script>',
-          custom_color: '#3B82F6',
-          greeting_message: 'Olá! Como posso ajudá-lo?',
-        },
-        api: {
-          status: 'active' as const,
-          endpoint_url: 'https://api.techlicense.com/v1/bots/your-bot-id/chat',
-          api_key: 'sk_live_xxxxx',
-        },
-      };
-    },
+  // Fetch bots to select which bot to connect channels to
+  const { data: botsData } = useApi(
+    () => apiClient.getBots(),
     { autoFetch: true }
   );
 
+  const bots = (botsData?.bots || []) as BotData[];
+
+  // Auto-select first bot
+  const activeBotId = selectedBotId || bots[0]?.id || '';
+
+  // Fetch channels for the selected bot
+  const { data: channelsData, refetch: refetchChannels } = useApi(
+    () => activeBotId ? apiClient.getChannels(activeBotId) : Promise.resolve({ channels: [], total: 0 }),
+    { autoFetch: !!activeBotId }
+  );
+
+  const channelsList = channelsData?.channels || [];
+
+  // Derive channel statuses from real data
+  const channelData = useMemo(() => {
+    const whatsappChannel = channelsList.find((ch: any) => ch.type === 'whatsapp');
+    const telegramChannel = channelsList.find((ch: any) => ch.type === 'telegram');
+
+    const apiBaseUrl = 'https://techlicense-chatbot-api.techlicensebr.workers.dev';
+
+    return {
+      whatsapp: {
+        status: whatsappChannel?.status === 'connected' ? 'connected' as const
+          : whatsappChannel ? 'qr_code_pending' as const
+          : 'disconnected' as const,
+        instance_name: (whatsappChannel?.config as any)?.instance_name || '',
+        phone_number: (whatsappChannel?.config as any)?.phone_number || '',
+        qr_code: (whatsappChannel?.config as any)?.qr_code || '',
+        channel_id: whatsappChannel?.id || '',
+        messages_sent: (whatsappChannel as any)?.messages_sent || 0,
+        messages_received: (whatsappChannel as any)?.messages_received || 0,
+      },
+      telegram: {
+        status: telegramChannel?.status === 'connected' ? 'connected' as const : 'disconnected' as const,
+        bot_username: (telegramChannel?.config as any)?.bot_username || '',
+        bot_token: (telegramChannel?.config as any)?.bot_token || '',
+        channel_id: telegramChannel?.id || '',
+        messages_sent: (telegramChannel as any)?.messages_sent || 0,
+        messages_received: (telegramChannel as any)?.messages_received || 0,
+      },
+      web_widget: {
+        status: 'active' as const,
+        embed_code: activeBotId
+          ? `<script src="${apiBaseUrl}/widget.js" data-bot-id="${activeBotId}" data-api-key="SUA_API_KEY" data-color="#3B82F6" data-greeting="Olá! Como posso ajudá-lo?"></script>`
+          : 'Selecione um bot primeiro',
+        custom_color: '#3B82F6',
+        greeting_message: 'Olá! Como posso ajudá-lo?',
+      },
+      api: {
+        status: 'active' as const,
+        endpoint_url: `${apiBaseUrl}/v1/chat/completions`,
+        api_key: 'Vá em Chaves de API para gerar uma chave',
+      },
+    };
+  }, [channelsList, activeBotId]);
+
   const whatsappConnect = useApiMutation(async (data: { instance_name: string }) => {
-    // Mock implementation - would call actual API
-    return { status: 'qr_code_pending', instance_name: data.instance_name };
+    return apiClient.connectWhatsApp(activeBotId, data);
   });
 
   const telegramConnect = useApiMutation(async (data: { bot_token: string }) => {
-    // Mock implementation - would call actual API
-    return { status: 'connected', bot_username: '@mybot', bot_token: data.bot_token };
+    return apiClient.connectTelegram(activeBotId, data);
   });
 
   const handleCopyCode = (code: string, type: string) => {
@@ -128,7 +128,7 @@ export default function CanaisPage() {
     }
   };
 
-  const currentChannels = channelData || channels;
+  const currentChannels = channelData;
 
   return (
     <div className="space-y-8 animate-fadeIn dark:bg-slate-950">
@@ -139,6 +139,34 @@ export default function CanaisPage() {
           Conecte e gerencie seus canais de comunicação
         </p>
       </div>
+
+      {/* Bot Selector */}
+      {bots.length > 0 && (
+        <div className="card dark:bg-slate-900 dark:border-slate-700 p-4">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Selecionar Bot para Canais
+          </label>
+          <select
+            value={activeBotId}
+            onChange={(e) => setSelectedBotId(e.target.value)}
+            className="input-field max-w-sm"
+          >
+            {bots.map((bot: BotData) => (
+              <option key={bot.id} value={bot.id}>{bot.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {bots.length === 0 && (
+        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex gap-3">
+          <AlertCircle size={20} className="text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
+          <div className="text-sm text-yellow-700 dark:text-yellow-300">
+            <p className="font-medium">Nenhum bot criado</p>
+            <p>Crie um bot primeiro na aba Bots para poder conectar canais.</p>
+          </div>
+        </div>
+      )}
 
       {/* WhatsApp Channel */}
       <div className="card dark:bg-slate-900 dark:border-slate-700">
