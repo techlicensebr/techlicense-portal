@@ -108,8 +108,27 @@ export interface ContactData {
   name: string;
   email: string;
   phone?: string;
-  organization?: string;
+  tags?: string[];
+  metadata?: Record<string, unknown>;
+  first_seen_at?: string;
+  last_seen_at?: string;
   created_at: string;
+  updated_at?: string;
+  conversations?: Array<{
+    id: string;
+    bot_id: string;
+    status: string;
+    channel: string;
+    message_count: number;
+    first_message_at: string;
+    closed_at?: string;
+    bots?: { name: string };
+  }>;
+  conversation_stats?: {
+    total: number;
+    active: number;
+    closed: number;
+  };
 }
 
 export interface ChannelConfigData {
@@ -626,7 +645,7 @@ class APIClient {
   // ============ CONTACTS ENDPOINTS ============
   // API: GET /v1/contacts, GET /v1/contacts/:id, PATCH /v1/contacts/:id
 
-  async getContacts(params?: PaginationParams) {
+  async getContacts(params?: { page?: number; per_page?: number; name?: string; email?: string; phone?: string; tags?: string }) {
     try {
       const response = await this.client.get(`${V1_BASE_URL}/contacts`, { params });
       const body = response.data;
