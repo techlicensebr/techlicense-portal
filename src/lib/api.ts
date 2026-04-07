@@ -371,6 +371,21 @@ class APIClient {
     }
   }
 
+  // ============ CHAT PLAYGROUND ============
+
+  async chatPlayground(botId: string, message: string, conversationId?: string | null) {
+    try {
+      const response = await this.client.post(`${V1_BASE_URL}/chat/completions`, {
+        bot_id: botId,
+        message,
+        ...(conversationId ? { conversation_id: conversationId } : {}),
+      });
+      return response.data?.data || response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   // ============ KNOWLEDGE BASE ENDPOINTS ============
   // API: GET /v1/knowledge/:botId, GET /v1/knowledge/:botId/documents, POST /v1/knowledge/:botId/documents, DELETE /v1/knowledge/:botId/documents/:docId
 
