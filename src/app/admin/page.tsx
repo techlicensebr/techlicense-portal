@@ -23,7 +23,7 @@ function SkeletonLoader() {
     <div className="animate-pulse space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="h-32 bg-[#1a1a1a] rounded-lg" />
+          <div key={i} className="h-32 bg-slate-200 dark:bg-slate-700 rounded-lg" />
         ))}
       </div>
     </div>
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
 
   if (dashboardError) {
     return (
-      <div className="flex items-center gap-2 p-4 bg-red-900/30 border border-red-700 rounded-lg text-red-300">
+      <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg text-red-700 dark:text-red-300">
         <AlertCircle size={20} />
         <span>Erro ao carregar painel: {dashboardError.message}</span>
       </div>
@@ -109,7 +109,7 @@ export default function AdminDashboard() {
     <div className="space-y-8 animate-fadeIn">
       {/* Page header */}
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-white">Painel Administrativo</h1>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Painel Administrativo</h1>
         <p className="text-slate-400">TechLicense Platform</p>
       </div>
 
@@ -118,12 +118,12 @@ export default function AdminDashboard() {
         {kpis.map((kpi, index) => (
           <div
             key={index}
-            className="card bg-[#111111] border border-[#1a1a1a] rounded-lg p-6 hover:border-[#D4A843] transition-colors"
+            className="card bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-6 hover:border-[#D4A843] transition-colors"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-[#A0A0A0] text-sm font-medium">{kpi.title}</p>
-                <p className="text-3xl font-bold text-white mt-2">{kpi.value}</p>
+                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">{kpi.title}</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{kpi.value}</p>
                 {kpi.change && (
                   <p className="text-xs text-green-400 mt-2">{kpi.change}</p>
                 )}
@@ -139,7 +139,7 @@ export default function AdminDashboard() {
       {/* Clientes Recentes Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Clientes Recentes</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Clientes Recentes</h2>
           <Link
             href="/admin/clientes"
             className="text-[#D4A843] text-sm font-medium hover:text-[#E8B860] transition-colors"
@@ -148,30 +148,30 @@ export default function AdminDashboard() {
           </Link>
         </div>
 
-        <div className="card bg-[#111111] border border-[#1a1a1a] rounded-lg overflow-hidden">
+        <div className="card bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
           {tenantsLoading ? (
             <div className="p-6 space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-12 bg-[#1a1a1a] rounded animate-pulse" />
+                <div key={i} className="h-12 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
               ))}
             </div>
           ) : tenants?.tenants && tenants.tenants.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#1a1a1a]">
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-[#A0A0A0] uppercase">Nome</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-[#A0A0A0] uppercase">Plano</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-[#A0A0A0] uppercase">Status</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-[#A0A0A0] uppercase">Criado</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-[#A0A0A0] uppercase">Ações</th>
+                  <tr className="border-b border-slate-200 dark:border-slate-700">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Nome</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Plano</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Status</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Criado</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1a1a1a]">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                   {tenants.tenants.map((tenant: any) => (
-                    <tr key={tenant.id} className="hover:bg-[#1a1a1a] transition-colors">
-                      <td className="px-6 py-4 text-sm text-white font-medium">{tenant.name}</td>
-                      <td className="px-6 py-4 text-sm text-[#C0C0C0]">
+                    <tr key={tenant.id} className="hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                      <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">{tenant.name}</td>
+                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
                         <span className="px-2 py-1 rounded text-xs font-medium bg-[#D4A843]/20 text-[#D4A843]">
                           {tenant.plan}
                         </span>
@@ -185,20 +185,20 @@ export default function AdminDashboard() {
                           {tenant.status === 'active' ? 'Ativo' : 'Inativo'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-[#A0A0A0]">
+                      <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                         {new Date(tenant.created_at).toLocaleDateString('pt-BR')}
                       </td>
                       <td className="px-6 py-4 text-sm space-x-2 flex">
                         <Link
                           href={`/admin/clientes/${tenant.id}`}
-                          className="p-2 rounded text-[#D4A843] hover:bg-[#D4A843]/10 transition-colors"
+                          className="p-2 rounded text-[#D4A843] hover:bg-amber-50 dark:hover:bg-[#D4A843]/10 transition-colors"
                           title="Ver detalhes"
                         >
                           <Eye size={18} />
                         </Link>
                         <Link
                           href={`/admin/clientes/${tenant.id}/edit`}
-                          className="p-2 rounded text-[#C0C0C0] hover:bg-[#1a1a1a] transition-colors"
+                          className="p-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                           title="Editar"
                         >
                           <Edit size={18} />
@@ -210,7 +210,7 @@ export default function AdminDashboard() {
               </table>
             </div>
           ) : (
-            <div className="p-6 text-center text-[#A0A0A0]">
+            <div className="p-6 text-center text-slate-500 dark:text-slate-400">
               <p>Nenhum cliente encontrado</p>
             </div>
           )}
@@ -219,7 +219,7 @@ export default function AdminDashboard() {
 
       {/* Quick Actions Section */}
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-white">Ações Rápidas</h2>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Ações Rápidas</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             href="/admin/clientes?create=true"
@@ -230,14 +230,14 @@ export default function AdminDashboard() {
           </Link>
           <Link
             href="/admin/planos"
-            className="p-4 rounded-lg bg-[#111111] border border-[#D4A843] text-[#D4A843] font-medium hover:bg-[#D4A843]/10 transition-colors flex items-center justify-center gap-2"
+            className="p-4 rounded-lg bg-white dark:bg-slate-800 border border-[#D4A843] text-[#D4A843] font-medium hover:bg-amber-50 dark:hover:bg-[#D4A843]/10 transition-colors flex items-center justify-center gap-2"
           >
             <BarChart3 size={20} />
             Ver Planos
           </Link>
           <Link
             href="/admin/relatorio"
-            className="p-4 rounded-lg bg-[#111111] border border-[#C0C0C0] text-[#C0C0C0] font-medium hover:bg-[#1a1a1a] transition-colors flex items-center justify-center gap-2"
+            className="p-4 rounded-lg bg-white dark:bg-slate-800 border border-slate-600 dark:border-slate-300 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
           >
             <BarChart3 size={20} />
             Relatório de Uso

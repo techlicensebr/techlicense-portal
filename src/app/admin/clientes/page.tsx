@@ -56,12 +56,12 @@ function CreateClientModal({ isOpen, onClose, onSuccess }: CreateModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[#111111] border border-[#1a1a1a] rounded-lg w-full max-w-md p-6">
-        <h2 className="text-xl font-bold text-white mb-4">Novo Cliente</h2>
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg w-full max-w-md p-6">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Novo Cliente</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#C0C0C0] mb-2">
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
               Nome da Empresa
             </label>
             <input
@@ -69,12 +69,12 @@ function CreateClientModal({ isOpen, onClose, onSuccess }: CreateModalProps) {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-2 bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg text-white focus:outline-none focus:border-[#D4A843] transition-colors"
+              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-[#D4A843] transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#C0C0C0] mb-2">
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
               Nome do Proprietário
             </label>
             <input
@@ -82,12 +82,12 @@ function CreateClientModal({ isOpen, onClose, onSuccess }: CreateModalProps) {
               required
               value={formData.owner_name}
               onChange={(e) => setFormData({ ...formData, owner_name: e.target.value })}
-              className="w-full px-4 py-2 bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg text-white focus:outline-none focus:border-[#D4A843] transition-colors"
+              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-[#D4A843] transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#C0C0C0] mb-2">
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
               Email do Proprietário
             </label>
             <input
@@ -95,12 +95,12 @@ function CreateClientModal({ isOpen, onClose, onSuccess }: CreateModalProps) {
               required
               value={formData.owner_email}
               onChange={(e) => setFormData({ ...formData, owner_email: e.target.value })}
-              className="w-full px-4 py-2 bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg text-white focus:outline-none focus:border-[#D4A843] transition-colors"
+              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-[#D4A843] transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#C0C0C0] mb-2">
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
               Senha
             </label>
             <input
@@ -108,18 +108,18 @@ function CreateClientModal({ isOpen, onClose, onSuccess }: CreateModalProps) {
               required
               value={formData.owner_password}
               onChange={(e) => setFormData({ ...formData, owner_password: e.target.value })}
-              className="w-full px-4 py-2 bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg text-white focus:outline-none focus:border-[#D4A843] transition-colors"
+              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-[#D4A843] transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#C0C0C0] mb-2">
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
               Plano
             </label>
             <select
               value={formData.plan}
               onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
-              className="w-full px-4 py-2 bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg text-white focus:outline-none focus:border-[#D4A843] transition-colors"
+              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-[#D4A843] transition-colors"
             >
               <option value="free">Free</option>
               <option value="starter">Starter</option>
@@ -132,7 +132,7 @@ function CreateClientModal({ isOpen, onClose, onSuccess }: CreateModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 rounded-lg text-[#C0C0C0] bg-[#1a1a1a] hover:bg-[#2a2a2a] transition-colors"
+              className="flex-1 px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
             >
               Cancelar
             </button>
@@ -198,7 +198,7 @@ export default function ClientsManagement() {
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-white">Clientes</h1>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Clientes</h1>
           <p className="text-slate-400">Gerenciar clientes TechLicense</p>
         </div>
         <button
@@ -212,16 +212,16 @@ export default function ClientsManagement() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-[#111111] border border-[#1a1a1a] rounded-lg p-4">
-          <p className="text-[#A0A0A0] text-sm">Total</p>
-          <p className="text-2xl font-bold text-white">{stats.total}</p>
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Total</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
         </div>
-        <div className="bg-[#111111] border border-[#1a1a1a] rounded-lg p-4">
-          <p className="text-[#A0A0A0] text-sm">Ativos</p>
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Ativos</p>
           <p className="text-2xl font-bold text-green-400">{stats.active}</p>
         </div>
-        <div className="bg-[#111111] border border-[#1a1a1a] rounded-lg p-4">
-          <p className="text-[#A0A0A0] text-sm">Inativos</p>
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Inativos</p>
           <p className="text-2xl font-bold text-red-400">{stats.inactive}</p>
         </div>
       </div>
@@ -230,7 +230,7 @@ export default function ClientsManagement() {
       <div className="space-y-4">
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#A0A0A0]" size={20} />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-slate-400" size={20} />
             <input
               type="text"
               placeholder="Buscar cliente..."
@@ -239,7 +239,7 @@ export default function ClientsManagement() {
                 setSearchQuery(e.target.value);
                 setPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 bg-[#111111] border border-[#1a1a1a] rounded-lg text-white placeholder-[#707070] focus:outline-none focus:border-[#D4A843] transition-colors"
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#D4A843] transition-colors"
             />
           </div>
           <select
@@ -248,7 +248,7 @@ export default function ClientsManagement() {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="px-4 py-2 bg-[#111111] border border-[#1a1a1a] rounded-lg text-white focus:outline-none focus:border-[#D4A843] transition-colors"
+            className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-[#D4A843] transition-colors"
           >
             <option value="all">Todos</option>
             <option value="active">Ativos</option>
@@ -258,11 +258,11 @@ export default function ClientsManagement() {
       </div>
 
       {/* Clients Table */}
-      <div className="bg-[#111111] border border-[#1a1a1a] rounded-lg overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
         {tenantsLoading ? (
           <div className="p-6 space-y-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-[#1a1a1a] rounded animate-pulse" />
+              <div key={i} className="h-16 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
             ))}
           </div>
         ) : tenants?.tenants && tenants.tenants.length > 0 ? (
@@ -270,35 +270,35 @@ export default function ClientsManagement() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#1a1a1a]">
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-[#A0A0A0] uppercase">
+                  <tr className="border-b border-slate-200 dark:border-slate-700">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
                       Nome
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-[#A0A0A0] uppercase">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
                       Slug
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-[#A0A0A0] uppercase">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
                       Plano
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-[#A0A0A0] uppercase">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
                       Status
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-[#A0A0A0] uppercase">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
                       Usuários
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-[#A0A0A0] uppercase">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
                       Criado
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-[#A0A0A0] uppercase">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
                       Ações
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1a1a1a]">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                   {tenants.tenants.map((tenant: any) => (
-                    <tr key={tenant.id} className="hover:bg-[#1a1a1a] transition-colors">
-                      <td className="px-6 py-4 text-sm text-white font-medium">{tenant.name}</td>
-                      <td className="px-6 py-4 text-sm text-[#A0A0A0] font-mono">{tenant.slug}</td>
+                    <tr key={tenant.id} className="hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                      <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">{tenant.name}</td>
+                      <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 font-mono">{tenant.slug}</td>
                       <td className="px-6 py-4 text-sm">
                         <span className="px-2 py-1 rounded text-xs font-medium bg-[#D4A843]/20 text-[#D4A843]">
                           {tenant.plan}
@@ -308,17 +308,17 @@ export default function ClientsManagement() {
                         <span
                           className={`px-2 py-1 rounded text-xs font-medium ${
                             tenant.status === 'active'
-                              ? 'bg-green-900/30 text-green-400'
-                              : 'bg-red-900/30 text-red-400'
+                              ? 'bg-green-50 dark:bg-green-900/30 text-green-400'
+                              : 'bg-red-50 dark:bg-red-900/30 text-red-400'
                           }`}
                         >
                           {tenant.status === 'active' ? 'Ativo' : 'Inativo'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-[#A0A0A0]">
+                      <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                         {tenant.users_count || 0}
                       </td>
-                      <td className="px-6 py-4 text-sm text-[#A0A0A0]">
+                      <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                         {new Date(tenant.created_at).toLocaleDateString('pt-BR')}
                       </td>
                       <td className="px-6 py-4 text-sm space-x-1 flex">
@@ -331,7 +331,7 @@ export default function ClientsManagement() {
                         </Link>
                         <Link
                           href={`/admin/clientes/${tenant.id}/edit`}
-                          className="p-2 rounded text-[#C0C0C0] hover:bg-[#1a1a1a] transition-colors"
+                          className="p-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                           title="Editar"
                         >
                           <Edit size={18} />
@@ -351,8 +351,8 @@ export default function ClientsManagement() {
             </div>
 
             {/* Pagination */}
-            <div className="px-6 py-4 border-t border-[#1a1a1a] flex items-center justify-between">
-              <p className="text-sm text-[#A0A0A0]">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 Página {page} de {totalPages}
               </p>
               <div className="flex gap-2">
@@ -375,8 +375,8 @@ export default function ClientsManagement() {
           </>
         ) : (
           <div className="p-12 text-center">
-            <AlertCircle className="mx-auto text-[#A0A0A0] mb-3" size={40} />
-            <p className="text-[#A0A0A0]">Nenhum cliente encontrado</p>
+            <AlertCircle className="mx-auto text-slate-500 dark:text-slate-400 mb-3" size={40} />
+            <p className="text-slate-500 dark:text-slate-400">Nenhum cliente encontrado</p>
           </div>
         )}
       </div>
