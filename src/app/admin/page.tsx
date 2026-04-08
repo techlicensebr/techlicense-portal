@@ -55,31 +55,31 @@ export default function AdminDashboard() {
     return [
       {
         title: 'Total Clientes',
-        value: (dashboard.total_tenants || 0).toString(),
+        value: (dashboard.totalTenants || dashboard.total_tenants || 0).toString(),
         icon: <Users size={24} />,
         color: 'from-[#D4A843] to-[#B8860B]',
       },
       {
         title: 'Usuários Ativos',
-        value: (dashboard.active_users || 0).toString(),
+        value: (dashboard.totalUsers || dashboard.active_users || 0).toString(),
         icon: <UserCheck size={24} />,
         color: 'from-blue-500 to-blue-700',
       },
       {
         title: 'Conversas Total',
-        value: (dashboard.total_conversations || 0).toLocaleString('pt-BR'),
+        value: (dashboard.totalConversations || dashboard.total_conversations || 0).toLocaleString('pt-BR'),
         icon: <MessageSquare size={24} />,
         color: 'from-green-500 to-green-700',
       },
       {
         title: 'Mensagens Total',
-        value: (dashboard.total_messages || 0).toLocaleString('pt-BR'),
+        value: (dashboard.totalMessages || dashboard.total_messages || 0).toLocaleString('pt-BR'),
         icon: <MessageCircle size={24} />,
         color: 'from-purple-500 to-purple-700',
       },
       {
         title: 'Assinaturas Ativas',
-        value: (dashboard.active_subscriptions || 0).toString(),
+        value: (dashboard.activeSubscriptions || dashboard.active_subscriptions || 0).toString(),
         icon: <CreditCard size={24} />,
         color: 'from-orange-500 to-orange-700',
       },
