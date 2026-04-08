@@ -118,7 +118,7 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const isAdmin = authUser?.role === 'admin';
+  const isAdmin = authUser?.role === 'admin' || authUser?.role === 'owner';
 
   const user: UserInfo = {
     name: authUser?.name || 'Usuário',
