@@ -209,11 +209,11 @@ export default function AuditLogsPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
             <Shield size={28} className="text-[#D4A843]" />
             Logs de Auditoria
           </h1>
-          <p className="text-[#808080] mt-1">
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
             Rastreie todas as ações realizadas na plataforma
           </p>
         </div>
@@ -229,67 +229,67 @@ export default function AuditLogsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-[#D4A843]/10 flex items-center justify-center">
               <Activity size={20} className="text-[#D4A843]" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{total}</p>
-              <p className="text-xs text-[#808080]">Total de Logs</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{total}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Total de Logs</p>
             </div>
           </div>
         </div>
-        <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-green-400/10 flex items-center justify-center">
               <Clock size={20} className="text-green-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
                 {logs.length > 0 ? timeAgo(logs[0].created_at) : '—'}
               </p>
-              <p className="text-xs text-[#808080]">Último Evento</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Último Evento</p>
             </div>
           </div>
         </div>
-        <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-blue-400/10 flex items-center justify-center">
               <User size={20} className="text-blue-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
                 {new Set(logs.map((l) => l.user?.email).filter(Boolean)).size}
               </p>
-              <p className="text-xs text-[#808080]">Usuários Ativos</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Usuários Ativos</p>
             </div>
           </div>
         </div>
-        <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-purple-400/10 flex items-center justify-center">
               <Filter size={20} className="text-purple-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{availableActions.length}</p>
-              <p className="text-xs text-[#808080]">Tipos de Ação</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{availableActions.length}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Tipos de Ação</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Search + Filter Bar */}
-      <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4 space-y-4">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-4">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[200px]">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#606060]" />
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               placeholder="Buscar por ação, recurso, usuário, IP..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-[#505050] focus:outline-none focus:border-[#D4A843]"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#D4A843]"
             />
           </div>
           <button
@@ -297,7 +297,7 @@ export default function AuditLogsPage() {
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
               hasActiveFilters
                 ? 'bg-[#D4A843]/10 border-[#D4A843]/30 text-[#D4A843]'
-                : 'bg-[#0a0a0a] border-[#2a2a2a] text-[#808080] hover:border-[#404040]'
+                : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
             }`}
           >
             <Filter size={16} />
@@ -319,13 +319,13 @@ export default function AuditLogsPage() {
 
         {/* Filter Panel */}
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-3 border-t border-[#2a2a2a]">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
             <div>
-              <label className="block text-xs font-medium text-[#808080] mb-1">Ação</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Ação</label>
               <select
                 value={actionFilter}
                 onChange={(e) => { setActionFilter(e.target.value); setPage(1); }}
-                className="w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white text-sm focus:outline-none focus:border-[#D4A843]"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#D4A843]"
               >
                 <option value="">Todas</option>
                 {availableActions.map((a) => (
@@ -334,11 +334,11 @@ export default function AuditLogsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#808080] mb-1">Recurso</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Recurso</label>
               <select
                 value={resourceFilter}
                 onChange={(e) => { setResourceFilter(e.target.value); setPage(1); }}
-                className="w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white text-sm focus:outline-none focus:border-[#D4A843]"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#D4A843]"
               >
                 <option value="">Todos</option>
                 {resourceTypes.map((r) => (
@@ -347,25 +347,25 @@ export default function AuditLogsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#808080] mb-1">
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                 <Calendar size={12} className="inline mr-1" />De
               </label>
               <input
                 type="date"
                 value={dateFrom}
                 onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-                className="w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white text-sm focus:outline-none focus:border-[#D4A843]"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#D4A843]"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#808080] mb-1">
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                 <Calendar size={12} className="inline mr-1" />Até
               </label>
               <input
                 type="date"
                 value={dateTo}
                 onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-                className="w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white text-sm focus:outline-none focus:border-[#D4A843]"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:outline-none focus:border-[#D4A843]"
               />
             </div>
           </div>
@@ -373,15 +373,15 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Logs Table */}
-      <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader size={32} className="animate-spin text-[#D4A843]" />
           </div>
         ) : filteredLogs.length === 0 ? (
           <div className="text-center py-16">
-            <Shield size={40} className="mx-auto text-[#404040] mb-3" />
-            <p className="text-[#606060]">
+            <Shield size={40} className="mx-auto text-slate-300 dark:text-slate-600 mb-3" />
+            <p className="text-slate-500 dark:text-slate-400">
               {total === 0 ? 'Nenhum log de auditoria registrado ainda.' : 'Nenhum resultado para os filtros aplicados.'}
             </p>
           </div>
@@ -390,24 +390,24 @@ export default function AuditLogsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#2a2a2a]">
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-[#808080] uppercase tracking-wider">Quando</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-[#808080] uppercase tracking-wider">Usuário</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-[#808080] uppercase tracking-wider">Ação</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-[#808080] uppercase tracking-wider">Recurso</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-[#808080] uppercase tracking-wider">IP</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-[#808080] uppercase tracking-wider">Detalhes</th>
+                  <tr className="border-b border-slate-200 dark:border-slate-700">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Quando</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Usuário</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ação</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Recurso</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">IP</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Detalhes</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredLogs.map((log) => (
                     <tr
                       key={log.id}
-                      className="border-b border-[#1a1a1a] hover:bg-[#0a0a0a] transition-colors"
+                      className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                     >
                       <td className="py-3 px-4">
-                        <div className="text-sm text-white">{timeAgo(log.created_at)}</div>
-                        <div className="text-xs text-[#606060]">
+                        <div className="text-sm text-slate-900 dark:text-white">{timeAgo(log.created_at)}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
                           {new Date(log.created_at).toLocaleString('pt-BR')}
                         </div>
                       </td>
@@ -417,10 +417,10 @@ export default function AuditLogsPage() {
                             {(log.user?.full_name || log.user?.email || '?')[0].toUpperCase()}
                           </div>
                           <div>
-                            <div className="text-sm text-white truncate max-w-[120px]">
+                            <div className="text-sm text-slate-900 dark:text-white truncate max-w-[120px]">
                               {log.user?.full_name || '—'}
                             </div>
-                            <div className="text-xs text-[#606060] truncate max-w-[120px]">
+                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[120px]">
                               {log.user?.email || ((log.details as Record<string, unknown>)?.auth_type === 'api_key' ? 'API Key' : '—')}
                             </div>
                           </div>
@@ -434,23 +434,23 @@ export default function AuditLogsPage() {
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-1.5">
                           <span>{getResourceIcon(log.resource_type)}</span>
-                          <span className="text-sm text-[#808080]">{log.resource_type}</span>
+                          <span className="text-sm text-slate-500 dark:text-slate-400">{log.resource_type}</span>
                         </div>
                         {log.resource_id && (
-                          <div className="text-xs text-[#505050] font-mono truncate max-w-[100px]" title={log.resource_id}>
+                          <div className="text-xs text-slate-400 dark:text-slate-500 font-mono truncate max-w-[100px]" title={log.resource_id}>
                             {log.resource_id.slice(0, 8)}...
                           </div>
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-sm text-[#808080] font-mono">
+                        <span className="text-sm text-slate-500 dark:text-slate-400 font-mono">
                           {log.ip_address || '—'}
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <div className="text-xs text-[#606060] max-w-[150px]">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 max-w-[150px]">
                           {log.details && typeof log.details === 'object' && 'method' in log.details && (
-                            <span className="inline-block px-1.5 py-0.5 bg-[#2a2a2a] rounded text-[#A0A0A0] font-mono mr-1">
+                            <span className="inline-block px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300 font-mono mr-1">
                               {String((log.details as Record<string, unknown>).method)}
                             </span>
                           )}
@@ -473,25 +473,25 @@ export default function AuditLogsPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-[#2a2a2a]">
-                <div className="text-sm text-[#808080]">
+              <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+                <div className="text-sm text-slate-500 dark:text-slate-400">
                   Mostrando {(page - 1) * perPage + 1}–{Math.min(page * perPage, total)} de {total}
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="p-2 rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] text-[#808080] hover:text-white hover:border-[#404040] transition-colors disabled:opacity-30"
+                    className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-600 transition-colors disabled:opacity-30"
                   >
                     <ChevronLeft size={16} />
                   </button>
-                  <span className="text-sm text-[#808080] px-2">
+                  <span className="text-sm text-slate-500 dark:text-slate-400 px-2">
                     {page} / {totalPages}
                   </span>
                   <button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
-                    className="p-2 rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] text-[#808080] hover:text-white hover:border-[#404040] transition-colors disabled:opacity-30"
+                    className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-600 transition-colors disabled:opacity-30"
                   >
                     <ChevronRight size={16} />
                   </button>
@@ -503,8 +503,8 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Info Card */}
-      <div className="bg-[#D4A843]/5 border border-[#D4A843]/20 rounded-xl p-4">
-        <p className="text-sm text-[#D4A843]">
+      <div className="bg-amber-50 dark:bg-[#D4A843]/5 border border-amber-200 dark:border-[#D4A843]/20 rounded-xl p-4">
+        <p className="text-sm text-amber-700 dark:text-[#D4A843]">
           <strong>Auditoria:</strong> Todas as ações de criação, edição e exclusão são automaticamente registradas.
           Os logs são retidos por 90 dias e podem ser exportados em CSV a qualquer momento.
         </p>
