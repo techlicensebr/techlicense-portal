@@ -168,7 +168,7 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen w-64 bg-[#0a0a0a] text-slate-100 shadow-lg shadow-black/20 border-r border-[#1a1a1a] transform transition-transform duration-300 ease-in-out z-40 lg:relative lg:translate-x-0 flex flex-col ${
+        className={`fixed left-0 top-0 h-screen w-64 bg-slate-900 text-slate-100 shadow-lg shadow-black/20 border-r border-slate-800 transform transition-transform duration-300 ease-in-out z-40 lg:relative lg:translate-x-0 flex flex-col ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -193,7 +193,7 @@ export default function Sidebar() {
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                   isActive(item.href)
                     ? 'bg-[#D4A843]/10 text-[#D4A843] font-medium border-l-4 border-[#D4A843]'
-                    : 'text-[#A0A0A0] hover:bg-[#1a1a1a] hover:text-[#C0C0C0]'
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-slate-300'
                 }`}
               >
                 {item.icon}
@@ -204,8 +204,8 @@ export default function Sidebar() {
 
           {/* Admin Section */}
           {isAdmin && (
-            <div className="mt-8 pt-8 border-t border-[#1a1a1a]">
-              <p className="px-4 text-xs font-semibold text-[#707070] uppercase mb-4">Administração</p>
+            <div className="mt-8 pt-8 border-t border-slate-800">
+              <p className="px-4 text-xs font-semibold text-slate-500 uppercase mb-4">Administração</p>
               <nav className="space-y-1">
                 <Link
                   href="/admin"
@@ -213,7 +213,7 @@ export default function Sidebar() {
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     isActive('/admin')
                       ? 'bg-[#D4A843]/10 text-[#D4A843] font-medium border-l-4 border-[#D4A843]'
-                      : 'text-[#A0A0A0] hover:bg-[#1a1a1a] hover:text-[#C0C0C0]'
+                      : 'text-slate-400 hover:bg-slate-800 hover:text-slate-300'
                   }`}
                 >
                   <Shield size={20} />
@@ -225,7 +225,7 @@ export default function Sidebar() {
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     isActive('/admin/clientes')
                       ? 'bg-[#D4A843]/10 text-[#D4A843] font-medium border-l-4 border-[#D4A843]'
-                      : 'text-[#A0A0A0] hover:bg-[#1a1a1a] hover:text-[#C0C0C0]'
+                      : 'text-slate-400 hover:bg-slate-800 hover:text-slate-300'
                   }`}
                 >
                   <Users size={20} />
@@ -237,7 +237,7 @@ export default function Sidebar() {
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     isActive('/admin/planos')
                       ? 'bg-[#D4A843]/10 text-[#D4A843] font-medium border-l-4 border-[#D4A843]'
-                      : 'text-[#A0A0A0] hover:bg-[#1a1a1a] hover:text-[#C0C0C0]'
+                      : 'text-slate-400 hover:bg-slate-800 hover:text-slate-300'
                   }`}
                 >
                   <BarChart3 size={20} />
@@ -249,32 +249,32 @@ export default function Sidebar() {
         </div>
 
         {/* Footer - User Info */}
-        <div className="mt-auto p-6 border-t border-[#1a1a1a] space-y-3">
+        <div className="mt-auto p-4 border-t border-slate-700/50 space-y-2">
           {/* User Button */}
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[#1a1a1a] transition-colors group relative"
+            className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-800 transition-colors group relative"
           >
-            <div className="w-10 h-10 bg-gradient-to-br from-[#D4A843] to-[#B8860B] rounded-full flex items-center justify-center text-black text-sm font-bold group-hover:shadow-lg group-hover:shadow-[#D4A843]/20 transition-shadow">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#D4A843] to-[#B8860B] rounded-full flex items-center justify-center text-black text-xs font-bold flex-shrink-0 group-hover:shadow-lg group-hover:shadow-[#D4A843]/20 transition-shadow">
               {getInitials(user.name)}
             </div>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-medium text-[#C0C0C0]">{user.name}</p>
-              <p className="text-xs text-[#707070] truncate">{user.email}</p>
+            <div className="flex-1 text-left min-w-0">
+              <p className="text-sm font-medium text-slate-200 truncate">{user.name}</p>
+              <p className="text-xs text-slate-500 truncate">{user.email}</p>
             </div>
             <ChevronDown
-              size={16}
-              className={`text-[#707070] transition-transform duration-200 ${
+              size={14}
+              className={`text-slate-500 transition-transform duration-200 flex-shrink-0 ${
                 showUserMenu ? 'rotate-180' : ''
               }`}
             />
 
             {/* User Menu Dropdown */}
             {showUserMenu && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#111111] border border-[#2a2a2a] rounded-lg shadow-lg shadow-black/40 z-50">
+              <div className="absolute bottom-full left-0 right-0 mb-2 bg-slate-800 border border-slate-700 rounded-lg shadow-lg shadow-black/40 z-50">
                 <Link
                   href="/profile"
-                  className="block px-4 py-2 text-sm text-[#C0C0C0] hover:bg-[#1a1a1a] hover:text-[#D4A843] rounded-t-lg transition-colors"
+                  className="block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-[#D4A843] rounded-t-lg transition-colors"
                   onClick={() => {
                     setShowUserMenu(false);
                     setIsOpen(false);
@@ -284,7 +284,7 @@ export default function Sidebar() {
                 </Link>
                 <Link
                   href="/settings"
-                  className="block px-4 py-2 text-sm text-[#C0C0C0] hover:bg-[#1a1a1a] hover:text-[#D4A843] transition-colors"
+                  className="block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-[#D4A843] transition-colors"
                   onClick={() => {
                     setShowUserMenu(false);
                     setIsOpen(false);
@@ -298,7 +298,7 @@ export default function Sidebar() {
                     setShowUserMenu(false);
                     setIsOpen(false);
                   }}
-                  className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-900/20 rounded-b-lg transition-colors flex items-center gap-2"
+                  className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-900/20 rounded-b-lg transition-colors flex items-center gap-2"
                 >
                   <LogOut size={16} />
                   Sair
@@ -308,9 +308,9 @@ export default function Sidebar() {
           </button>
 
           {/* Version Info */}
-          <div className="text-xs text-[#505050] space-y-1 pt-3 border-t border-[#1a1a1a]">
-            <p className="font-medium" style={{ color: '#D4A843' }}>TechLicense</p>
-            <p>v1.0.0</p>
+          <div className="text-xs text-slate-600 flex items-center justify-between pt-2 border-t border-slate-700/50">
+            <span className="font-medium text-[#D4A843]">TechLicense</span>
+            <span>v1.0.0</span>
           </div>
         </div>
       </aside>
