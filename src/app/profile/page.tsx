@@ -68,7 +68,7 @@ export default function ProfilePage() {
     setSaved(false);
     setSaveError(null);
     try {
-      await updateMutation.execute({
+      await updateMutation.mutate({
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
