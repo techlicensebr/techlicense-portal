@@ -172,8 +172,8 @@ export default function Sidebar() {
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Header */}
-        <div className="p-6">
+        {/* Header + Navigation (scrollable) */}
+        <div className="p-6 flex-1 overflow-y-auto">
           {/* Logo */}
           <Link
             href="/"
@@ -249,7 +249,7 @@ export default function Sidebar() {
         </div>
 
         {/* Footer - User Info */}
-        <div className="mt-auto p-4 border-t border-slate-700/50 space-y-2">
+        <div className="flex-shrink-0 p-4 border-t border-slate-700/50 space-y-2">
           {/* User Button */}
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
