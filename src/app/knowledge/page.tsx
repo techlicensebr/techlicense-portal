@@ -175,63 +175,63 @@ export default function KnowledgeBasePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
             <Brain size={28} className="text-[#D4A843]" />
             Base de Conhecimento
           </h1>
-          <p className="text-[#808080] mt-1">Envie e gerencie documentos para seus chatbots</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Envie e gerencie documentos para seus chatbots</p>
         </div>
       </div>
 
       {/* Bot Selector */}
-      <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
-        <label className="block text-sm font-medium text-[#A0A0A0] mb-2">Selecione o Bot</label>
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+        <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Selecione o Bot</label>
         <div className="relative">
           <select
             value={selectedBot}
             onChange={(e) => setSelectedBot(e.target.value)}
-            className="w-full px-4 py-2.5 bg-[#0a0a0a] border-2 border-[#2a2a2a] rounded-lg text-white appearance-none focus:outline-none focus:border-[#D4A843]"
+            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white appearance-none focus:outline-none focus:border-[#D4A843]"
           >
             {bots.map(bot => (
               <option key={bot.id} value={bot.id}>{bot.name}</option>
             ))}
           </select>
-          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#606060] pointer-events-none" />
+          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none" />
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-[#D4A843]/10 flex items-center justify-center">
               <FileText size={20} className="text-[#D4A843]" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{documents.length}</p>
-              <p className="text-xs text-[#808080]">Documentos</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{documents.length}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Documentos</p>
             </div>
           </div>
         </div>
-        <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-blue-400/10 flex items-center justify-center">
               <HardDrive size={20} className="text-blue-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{formatFileSize(totalSize)}</p>
-              <p className="text-xs text-[#808080]">Tamanho total</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatFileSize(totalSize)}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Tamanho total</p>
             </div>
           </div>
         </div>
-        <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-green-400/10 flex items-center justify-center">
               <CheckCircle size={20} className="text-green-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{documents.filter(d => d.status === 'ready' || d.status === 'processed').length}</p>
-              <p className="text-xs text-[#808080]">Processados</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{documents.filter(d => d.status === 'ready' || d.status === 'processed').length}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Processados</p>
             </div>
           </div>
         </div>
@@ -244,20 +244,20 @@ export default function KnowledgeBasePage() {
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
-          className={`bg-[#111111] border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
-            dragActive ? 'border-[#D4A843] bg-[#D4A843]/5' : 'border-[#2a2a2a] hover:border-[#404040]'
+          className={`bg-white dark:bg-slate-800 border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${
+            dragActive ? 'border-[#D4A843] bg-[#D4A843]/5' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
           }`}
           onClick={() => fileInputRef.current?.click()}
         >
           {uploading ? (
             <Loader size={48} className="mx-auto text-[#D4A843] mb-4 animate-spin" />
           ) : (
-            <Upload size={48} className="mx-auto text-[#606060] mb-4" />
+            <Upload size={48} className="mx-auto text-slate-400 dark:text-slate-500 mb-4" />
           )}
-          <h3 className="text-lg font-semibold text-white">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
             {uploading ? 'Enviando...' : 'Arraste arquivos aqui ou clique para selecionar'}
           </h3>
-          <p className="text-sm text-[#606060] mt-2">Formatos suportados: PDF, TXT, DOCX, CSV (máx. 25MB)</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Formatos suportados: PDF, TXT, DOCX, CSV (máx. 25MB)</p>
           <input
             ref={fileInputRef}
             type="file"
@@ -270,17 +270,17 @@ export default function KnowledgeBasePage() {
       )}
 
       {/* Documents List */}
-      <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
         {/* Search */}
-        <div className="p-4 border-b border-[#2a2a2a]">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700">
           <div className="relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#606060]" />
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               placeholder="Buscar documentos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-[#505050] focus:outline-none focus:border-[#D4A843]"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#D4A843]"
             />
           </div>
         </div>
@@ -288,8 +288,8 @@ export default function KnowledgeBasePage() {
         {/* Table */}
         {filteredDocuments.length === 0 ? (
           <div className="text-center py-12">
-            <File size={40} className="mx-auto text-[#404040] mb-3" />
-            <p className="text-[#606060]">
+            <File size={40} className="mx-auto text-slate-300 dark:text-slate-600 mb-3" />
+            <p className="text-slate-500 dark:text-slate-400">
               {documents.length === 0 ? 'Nenhum documento. Envie seu primeiro arquivo!' : 'Nenhum resultado para a busca.'}
             </p>
           </div>
@@ -297,40 +297,40 @@ export default function KnowledgeBasePage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#2a2a2a]">
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-[#808080] uppercase tracking-wider">Nome</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-[#808080] uppercase tracking-wider">Tipo</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-[#808080] uppercase tracking-wider">Tamanho</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-[#808080] uppercase tracking-wider">Status</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-[#808080] uppercase tracking-wider">Data</th>
-                  <th className="text-right py-3 px-4 text-xs font-semibold text-[#808080] uppercase tracking-wider">Ações</th>
+                <tr className="border-b border-slate-200 dark:border-slate-700">
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nome</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tipo</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tamanho</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Data</th>
+                  <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredDocuments.map(doc => {
                   const statusCfg = getStatusConfig(doc.status);
                   return (
-                    <tr key={doc.id} className="border-b border-[#1a1a1a] hover:bg-[#0a0a0a] transition-colors">
+                    <tr key={doc.id} className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          <File size={16} className="text-[#606060] shrink-0" />
-                          <span className="text-sm font-medium text-white truncate max-w-[200px]">{doc.name}</span>
+                          <File size={16} className="text-slate-400 dark:text-slate-500 shrink-0" />
+                          <span className="text-sm font-medium text-slate-900 dark:text-white truncate max-w-[200px]">{doc.name}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-sm text-[#808080]">{(doc.type || '').toUpperCase()}</td>
-                      <td className="py-3 px-4 text-sm text-[#808080]">{formatFileSize(doc.size)}</td>
+                      <td className="py-3 px-4 text-sm text-slate-500 dark:text-slate-400">{(doc.type || '').toUpperCase()}</td>
+                      <td className="py-3 px-4 text-sm text-slate-500 dark:text-slate-400">{formatFileSize(doc.size)}</td>
                       <td className="py-3 px-4">
                         <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-xs font-medium ${statusCfg.color}`}>
                           {statusCfg.icon} {statusCfg.label}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-sm text-[#808080]">
+                      <td className="py-3 px-4 text-sm text-slate-500 dark:text-slate-400">
                         {new Date(doc.created_at).toLocaleDateString('pt-BR')}
                       </td>
                       <td className="py-3 px-4 text-right">
                         <button
                           onClick={() => setDeleteConfirm(doc.id)}
-                          className="p-2 text-[#606060] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                          className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
                           title="Excluir documento"
                         >
                           <Trash2 size={16} />
@@ -356,11 +356,11 @@ export default function KnowledgeBasePage() {
       {/* Delete Confirm Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111111] border border-[#2a2a2a] rounded-2xl p-6 max-w-sm w-full">
-            <h2 className="text-lg font-bold text-white mb-2">Confirmar Exclusão</h2>
-            <p className="text-[#808080] mb-6">Tem certeza que deseja excluir este documento? Os chunks associados também serão removidos.</p>
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 max-w-sm w-full">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Confirmar Exclusão</h2>
+            <p className="text-slate-600 dark:text-slate-400 mb-6">Tem certeza que deseja excluir este documento? Os chunks associados também serão removidos.</p>
             <div className="flex gap-3 justify-end">
-              <button onClick={() => setDeleteConfirm(null)} className="px-4 py-2 bg-[#2a2a2a] text-white rounded-lg hover:bg-[#333] transition-colors">
+              <button onClick={() => setDeleteConfirm(null)} className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
                 Cancelar
               </button>
               <button onClick={() => handleDelete(deleteConfirm)} disabled={deleteLoading}

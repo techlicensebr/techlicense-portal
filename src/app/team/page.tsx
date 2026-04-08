@@ -149,16 +149,16 @@ function InviteModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#111111] border border-[#2a2a2a] rounded-2xl w-full max-w-md shadow-2xl">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[#2a2a2a]">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#D4A843]/10 flex items-center justify-center">
               <UserPlus size={20} className="text-[#D4A843]" />
             </div>
-            <h2 className="text-lg font-semibold text-white">Convidar Membro</h2>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Convidar Membro</h2>
           </div>
-          <button onClick={handleClose} className="text-[#606060] hover:text-white transition-colors">
+          <button onClick={handleClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -170,21 +170,21 @@ function InviteModal({
               <Check size={20} />
               <p className="font-medium">Convite enviado com sucesso!</p>
             </div>
-            <p className="text-sm text-[#808080]">
-              Compartilhe o link abaixo com <span className="text-white font-medium">{email}</span>:
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Compartilhe o link abaixo com <span className="text-slate-900 dark:text-white font-medium">{email}</span>:
             </p>
-            <div className="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-3 flex items-center gap-2">
+            <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-3 flex items-center gap-2">
               <code className="text-xs text-[#D4A843] flex-1 break-all">{success.invite_url}</code>
               <button
                 onClick={() => handleCopy(success.invite_url || '')}
-                className="shrink-0 p-2 rounded-lg hover:bg-[#2a2a2a] transition-colors"
+                className="shrink-0 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >
-                {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} className="text-[#808080]" />}
+                {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} className="text-slate-500 dark:text-slate-400" />}
               </button>
             </div>
             <button
               onClick={handleClose}
-              className="w-full py-2.5 bg-[#2a2a2a] hover:bg-[#333] text-white rounded-lg transition-colors mt-2"
+              className="w-full py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors mt-2"
             >
               Fechar
             </button>
@@ -200,33 +200,33 @@ function InviteModal({
             )}
 
             <div>
-              <label className="block text-sm font-medium text-[#A0A0A0] mb-1.5">E-mail</label>
+              <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">E-mail</label>
               <div className="relative">
-                <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#606060]" />
+                <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="membro@empresa.com"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#0a0a0a] border-2 border-[#2a2a2a] rounded-lg text-white placeholder-[#505050] focus:outline-none focus:border-[#D4A843]"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#D4A843]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#A0A0A0] mb-1.5">Papel</label>
+              <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">Papel</label>
               <div className="relative">
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#0a0a0a] border-2 border-[#2a2a2a] rounded-lg text-white appearance-none focus:outline-none focus:border-[#D4A843]"
+                  className="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white appearance-none focus:outline-none focus:border-[#D4A843]"
                 >
                   {availableRoles.map(r => (
                     <option key={r.value} value={r.value}>{r.label}</option>
                   ))}
                 </select>
-                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#606060] pointer-events-none" />
+                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none" />
               </div>
             </div>
 
@@ -333,11 +333,11 @@ export default function TeamPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
             <Users size={28} className="text-[#D4A843]" />
             Gerenciamento de Time
           </h1>
-          <p className="text-[#808080] mt-1">
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
             {members.length} membro{members.length !== 1 ? 's' : ''} no time
             {pendingInvitations.length > 0 && ` · ${pendingInvitations.length} convite${pendingInvitations.length !== 1 ? 's' : ''} pendente${pendingInvitations.length !== 1 ? 's' : ''}`}
           </p>
@@ -355,13 +355,13 @@ export default function TeamPage() {
 
       {/* Tabs */}
       {canManage && (
-        <div className="flex gap-1 bg-[#111111] border border-[#2a2a2a] rounded-xl p-1">
+        <div className="flex gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1">
           <button
             onClick={() => setTab('members')}
             className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
               tab === 'members'
                 ? 'bg-[#D4A843]/10 text-[#D4A843] border border-[#D4A843]/30'
-                : 'text-[#808080] hover:text-white'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             Membros ({members.length})
@@ -371,7 +371,7 @@ export default function TeamPage() {
             className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
               tab === 'invitations'
                 ? 'bg-[#D4A843]/10 text-[#D4A843] border border-[#D4A843]/30'
-                : 'text-[#808080] hover:text-white'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             Convites ({invitations.length})
@@ -390,15 +390,15 @@ export default function TeamPage() {
             return (
               <div
                 key={member.id}
-                className={`bg-[#111111] border rounded-xl p-4 flex items-center gap-4 transition-colors ${
-                  member.is_active ? 'border-[#2a2a2a]' : 'border-red-900/30 opacity-60'
+                className={`bg-white dark:bg-slate-800 border rounded-xl p-4 flex items-center gap-4 transition-colors ${
+                  member.is_active ? 'border-slate-200 dark:border-slate-700' : 'border-red-900/30 opacity-60'
                 }`}
               >
                 {/* Avatar */}
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold ${
                   member.role === 'owner' ? 'bg-amber-400/10 text-amber-400' :
                   member.role === 'admin' ? 'bg-blue-400/10 text-blue-400' :
-                  'bg-[#2a2a2a] text-[#808080]'
+                  'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                 }`}>
                   {member.avatar_url ? (
                     <img src={member.avatar_url} alt="" className="w-12 h-12 rounded-xl object-cover" />
@@ -410,19 +410,19 @@ export default function TeamPage() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-white font-medium truncate">
+                    <p className="text-slate-900 dark:text-white font-medium truncate">
                       {member.full_name || member.email.split('@')[0]}
                     </p>
                     {isCurrentUser && (
-                      <span className="text-xs text-[#606060] bg-[#1a1a1a] px-2 py-0.5 rounded">Você</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">Você</span>
                     )}
                     {!member.is_active && (
                       <span className="text-xs text-red-400 bg-red-400/10 px-2 py-0.5 rounded border border-red-400/30">Inativo</span>
                     )}
                   </div>
-                  <p className="text-sm text-[#606060] truncate">{member.email}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{member.email}</p>
                   {member.last_login_at && (
-                    <p className="text-xs text-[#404040] mt-0.5 flex items-center gap-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
                       <Clock size={10} /> Último login: {formatDate(member.last_login_at)}
                     </p>
                   )}
@@ -443,20 +443,20 @@ export default function TeamPage() {
                         value={member.role}
                         onChange={(e) => handleChangeRole(member.id, e.target.value)}
                         disabled={actionLoading === member.id}
-                        className="appearance-none bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg px-3 py-1.5 text-sm text-white pr-8 focus:outline-none focus:border-[#D4A843] disabled:opacity-50"
+                        className="appearance-none bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white pr-8 focus:outline-none focus:border-[#D4A843] disabled:opacity-50"
                       >
                         {currentUserRole === 'owner' && <option value="admin">Admin</option>}
                         <option value="agent">Agente</option>
                         <option value="viewer">Visualizador</option>
                       </select>
-                      <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#606060] pointer-events-none" />
+                      <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none" />
                     </div>
 
                     {/* Remove button */}
                     <button
                       onClick={() => handleRemoveMember(member.id, member.full_name || member.email)}
                       disabled={actionLoading === member.id}
-                      className="p-2 text-[#606060] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-2 text-slate-500 dark:text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors disabled:opacity-50"
                       title="Remover membro"
                     >
                       {actionLoading === member.id ? <Loader size={16} className="animate-spin" /> : <Trash2 size={16} />}
@@ -468,7 +468,7 @@ export default function TeamPage() {
           })}
 
           {members.length === 0 && (
-            <div className="text-center py-12 text-[#606060]">
+            <div className="text-center py-12 text-slate-500 dark:text-slate-400">
               <Users size={48} className="mx-auto mb-3 opacity-30" />
               <p>Nenhum membro encontrado.</p>
             </div>
@@ -487,23 +487,23 @@ export default function TeamPage() {
             return (
               <div
                 key={invite.id}
-                className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4 flex items-center gap-4"
+                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex items-center gap-4"
               >
                 {/* Icon */}
-                <div className="w-12 h-12 rounded-xl bg-[#1a1a1a] flex items-center justify-center">
-                  <Mail size={20} className="text-[#606060]" />
+                <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                  <Mail size={20} className="text-slate-500 dark:text-slate-400" />
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-medium truncate">{invite.email}</p>
-                  <p className="text-sm text-[#606060]">
+                  <p className="text-slate-900 dark:text-white font-medium truncate">{invite.email}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
                     Convidado em {formatDate(invite.created_at)}
                     {invite.invited_by_user && (
-                      <> por <span className="text-[#808080]">{invite.invited_by_user.full_name || invite.invited_by_user.email}</span></>
+                      <> por <span className="text-slate-600 dark:text-slate-300">{invite.invited_by_user.full_name || invite.invited_by_user.email}</span></>
                     )}
                   </p>
-                  <p className="text-xs text-[#404040] mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     Expira em {formatDate(invite.expires_at)}
                   </p>
                 </div>
@@ -524,7 +524,7 @@ export default function TeamPage() {
                   <button
                     onClick={() => handleRevokeInvite(invite.id)}
                     disabled={actionLoading === invite.id}
-                    className="p-2 text-[#606060] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors disabled:opacity-50"
+                    className="p-2 text-slate-500 dark:text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors disabled:opacity-50"
                     title="Revogar convite"
                   >
                     {actionLoading === invite.id ? <Loader size={16} className="animate-spin" /> : <Trash2 size={16} />}
@@ -535,7 +535,7 @@ export default function TeamPage() {
           })}
 
           {invitations.length === 0 && (
-            <div className="text-center py-12 text-[#606060]">
+            <div className="text-center py-12 text-slate-500 dark:text-slate-400">
               <Mail size={48} className="mx-auto mb-3 opacity-30" />
               <p>Nenhum convite encontrado.</p>
               <button

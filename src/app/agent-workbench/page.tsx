@@ -109,14 +109,14 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }>
 
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string | number; color: string }) {
   return (
-    <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${color}`}>
           {icon}
         </div>
         <div>
-          <p className="text-2xl font-bold text-white">{value}</p>
-          <p className="text-xs text-[#808080]">{label}</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
         </div>
       </div>
     </div>
@@ -155,36 +155,36 @@ function CreateQueueModal({ isOpen, onClose, onCreated }: { isOpen: boolean; onC
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#111111] border border-[#2a2a2a] rounded-2xl w-full max-w-md shadow-2xl">
-        <div className="flex items-center justify-between p-6 border-b border-[#2a2a2a]">
-          <h2 className="text-lg font-semibold text-white">Nova Fila de Atendimento</h2>
-          <button onClick={onClose} className="text-[#606060] hover:text-white"><X size={20} /></button>
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Nova Fila de Atendimento</h2>
+          <button onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"><X size={20} /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && <p className="text-sm text-red-400 bg-red-400/10 p-3 rounded-lg border border-red-400/30">{error}</p>}
           <div>
-            <label className="block text-sm font-medium text-[#A0A0A0] mb-1.5">Nome</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Nome</label>
             <input type="text" value={name} onChange={e => setName(e.target.value)} required placeholder="Ex: Suporte Técnico"
-              className="w-full px-4 py-2.5 bg-[#0a0a0a] border-2 border-[#2a2a2a] rounded-lg text-white placeholder-[#505050] focus:outline-none focus:border-[#D4A843]" />
+              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#D4A843]" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#A0A0A0] mb-1.5">Descrição</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Descrição</label>
             <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Opcional"
-              className="w-full px-4 py-2.5 bg-[#0a0a0a] border-2 border-[#2a2a2a] rounded-lg text-white placeholder-[#505050] focus:outline-none focus:border-[#D4A843]" />
+              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#D4A843]" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#A0A0A0] mb-1.5">Max. conversas simultâneas por agente</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Max. conversas simultâneas por agente</label>
             <input type="number" value={maxConcurrent} onChange={e => setMaxConcurrent(Number(e.target.value))} min={1} max={50}
-              className="w-full px-4 py-2.5 bg-[#0a0a0a] border-2 border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:border-[#D4A843]" />
+              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-[#D4A843]" />
           </div>
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-[#A0A0A0]">Auto-assign para agentes</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Auto-assign para agentes</label>
             <button type="button" onClick={() => setAutoAssign(!autoAssign)} className="text-[#D4A843]">
-              {autoAssign ? <ToggleRight size={28} /> : <ToggleLeft size={28} className="text-[#606060]" />}
+              {autoAssign ? <ToggleRight size={28} /> : <ToggleLeft size={28} className="text-slate-500 dark:text-slate-400" />}
             </button>
           </div>
           <button type="submit" disabled={loading || !name.trim()}
-            className="w-full py-2.5 bg-gradient-to-r from-[#D4A843] to-[#B8860B] hover:from-[#E8C860] hover:to-[#C9982E] disabled:from-[#333] disabled:to-[#222] text-black font-semibold rounded-lg transition-all disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            className="w-full py-2.5 bg-gradient-to-r from-[#D4A843] to-[#B8860B] hover:from-[#E8C860] hover:to-[#C9982E] disabled:from-slate-300 dark:disabled:from-slate-700 disabled:to-slate-200 dark:disabled:to-slate-600 text-black font-semibold rounded-lg transition-all disabled:text-slate-500 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {loading ? <Loader size={18} className="animate-spin" /> : <Plus size={18} />}
             Criar Fila
           </button>
@@ -271,11 +271,11 @@ export default function AgentWorkbenchPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
             <Headphones size={28} className="text-[#D4A843]" />
             Atendimento Humano
           </h1>
-          <p className="text-[#808080] mt-1">Gerencie conversas transferidas dos bots para agentes humanos</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Gerencie conversas transferidas dos bots para agentes humanos</p>
         </div>
       </div>
 
@@ -290,13 +290,13 @@ export default function AgentWorkbenchPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-[#111111] border border-[#2a2a2a] rounded-xl p-1">
+      <div className="flex gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1">
         <button onClick={() => setTab('requests')}
-          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${tab === 'requests' ? 'bg-[#D4A843]/10 text-[#D4A843] border border-[#D4A843]/30' : 'text-[#808080] hover:text-white'}`}>
+          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${tab === 'requests' ? 'bg-[#D4A843]/10 text-[#D4A843] border border-[#D4A843]/30' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
           Solicitações ({requests.length})
         </button>
         <button onClick={() => setTab('queues')}
-          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${tab === 'queues' ? 'bg-[#D4A843]/10 text-[#D4A843] border border-[#D4A843]/30' : 'text-[#808080] hover:text-white'}`}>
+          className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${tab === 'queues' ? 'bg-[#D4A843]/10 text-[#D4A843] border border-[#D4A843]/30' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
           Filas ({queues.length})
         </button>
       </div>
@@ -308,7 +308,7 @@ export default function AgentWorkbenchPage() {
           <div className="flex gap-2">
             {['', 'waiting', 'assigned', 'resolved'].map(s => (
               <button key={s} onClick={() => setStatusFilter(s)}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${statusFilter === s ? 'bg-[#D4A843]/10 text-[#D4A843] border border-[#D4A843]/30' : 'bg-[#111111] border border-[#2a2a2a] text-[#808080] hover:text-white'}`}>
+                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${statusFilter === s ? 'bg-[#D4A843]/10 text-[#D4A843] border border-[#D4A843]/30' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
                 {s === '' ? 'Todos' : STATUS_STYLES[s]?.label || s}
               </button>
             ))}
@@ -317,7 +317,7 @@ export default function AgentWorkbenchPage() {
           {requests.map(req => {
             const style = STATUS_STYLES[req.status] || STATUS_STYLES.waiting;
             return (
-              <div key={req.id} className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+              <div key={req.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
                 <div className="flex items-center gap-4">
                   {/* Icon */}
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${style.bg}`}>
@@ -329,18 +329,18 @@ export default function AgentWorkbenchPage() {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-white font-medium">
+                      <p className="text-slate-900 dark:text-white font-medium">
                         {req.bot?.name || 'Bot'} → {req.queue?.name || 'Sem fila'}
                       </p>
                       <span className={`px-2 py-0.5 rounded text-xs border ${style.bg} ${style.text}`}>
                         {style.label}
                       </span>
                     </div>
-                    <p className="text-sm text-[#606060]">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
                       {TRIGGER_LABELS[req.trigger] || req.trigger}
                       {req.trigger_reason && ` — ${req.trigger_reason}`}
                     </p>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-[#404040]">
+                    <div className="flex items-center gap-3 mt-1 text-xs text-slate-600 dark:text-slate-500">
                       <span className="flex items-center gap-1"><MessageSquare size={10} /> Conv: {req.conversation?.message_count || 0} msgs</span>
                       <span className="flex items-center gap-1"><Clock size={10} /> {formatTimeAgo(req.wait_started_at)}</span>
                       {req.assigned_user && <span>Agente: {req.assigned_user.full_name || req.assigned_user.email}</span>}
@@ -370,7 +370,7 @@ export default function AgentWorkbenchPage() {
           })}
 
           {requests.length === 0 && (
-            <div className="text-center py-16 text-[#606060]">
+            <div className="text-center py-16 text-slate-500 dark:text-slate-400">
               <Headphones size={48} className="mx-auto mb-3 opacity-30" />
               <p className="text-lg">Nenhuma solicitação {statusFilter ? STATUS_STYLES[statusFilter]?.label.toLowerCase() : ''}</p>
               <p className="text-sm mt-1">Quando um bot transferir uma conversa, ela aparecerá aqui.</p>
@@ -392,14 +392,14 @@ export default function AgentWorkbenchPage() {
           )}
 
           {queues.map(queue => (
-            <div key={queue.id} className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+            <div key={queue.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-[#D4A843]/10 flex items-center justify-center shrink-0">
                   <Settings size={20} className="text-[#D4A843]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-white font-medium">{queue.name}</p>
+                    <p className="text-slate-900 dark:text-white font-medium">{queue.name}</p>
                     {queue.auto_assign && (
                       <span className="px-2 py-0.5 rounded text-xs bg-green-400/10 text-green-400 border border-green-400/30">Auto-assign</span>
                     )}
@@ -407,8 +407,8 @@ export default function AgentWorkbenchPage() {
                       <span className="px-2 py-0.5 rounded text-xs bg-red-400/10 text-red-400 border border-red-400/30">Inativa</span>
                     )}
                   </div>
-                  {queue.description && <p className="text-sm text-[#606060]">{queue.description}</p>}
-                  <div className="flex items-center gap-3 mt-1 text-xs text-[#404040]">
+                  {queue.description && <p className="text-sm text-slate-500 dark:text-slate-400">{queue.description}</p>}
+                  <div className="flex items-center gap-3 mt-1 text-xs text-slate-600 dark:text-slate-500">
                     <span className="flex items-center gap-1"><Users size={10} /> {queue.queue_assignments?.length || 0} agentes</span>
                     <span>Max: {queue.max_concurrent} conversas/agente</span>
                     <span>Prioridade: {queue.priority}</span>
@@ -419,7 +419,7 @@ export default function AgentWorkbenchPage() {
                 {queue.queue_assignments && queue.queue_assignments.length > 0 && (
                   <div className="flex -space-x-2">
                     {queue.queue_assignments.slice(0, 5).map(a => (
-                      <div key={a.id} className={`w-8 h-8 rounded-full border-2 border-[#111111] flex items-center justify-center text-xs font-bold ${a.is_available ? 'bg-green-400/20 text-green-400' : 'bg-[#2a2a2a] text-[#606060]'}`}
+                      <div key={a.id} className={`w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center text-xs font-bold ${a.is_available ? 'bg-green-400/20 text-green-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}
                         title={`${a.users?.full_name || a.users?.email || 'Agente'} (${a.is_available ? 'Disponível' : 'Indisponível'})`}>
                         {(a.users?.full_name || a.users?.email || '?')[0].toUpperCase()}
                       </div>
@@ -431,7 +431,7 @@ export default function AgentWorkbenchPage() {
           ))}
 
           {queues.length === 0 && (
-            <div className="text-center py-16 text-[#606060]">
+            <div className="text-center py-16 text-slate-500 dark:text-slate-400">
               <Settings size={48} className="mx-auto mb-3 opacity-30" />
               <p className="text-lg">Nenhuma fila criada</p>
               <p className="text-sm mt-1">Crie filas para organizar o atendimento por departamento ou assunto.</p>
