@@ -13,6 +13,26 @@ import {
 import { useApi } from '@/hooks/useApi';
 import { apiClient } from '@/lib/api';
 
+interface PlanRaw {
+  id: string;
+  name: string;
+  slug: string;
+  price_monthly?: number;
+  price?: number;
+  max_bots?: number;
+  bots_limit?: number;
+  max_messages_month?: number;
+  messages_limit?: number;
+  max_tokens_month?: number;
+  tokens_limit?: number;
+  max_storage_bytes?: number;
+  storage_limit?: number;
+  features: string[];
+  is_active?: boolean;
+  sort_order?: number;
+  popular?: boolean;
+}
+
 interface Plan {
   id: string;
   name: string;
@@ -21,9 +41,25 @@ interface Plan {
   bots_limit: number;
   messages_limit: number;
   tokens_limit: number;
-  storage_limit: number;
+  storage_gb: number;
   features: string[];
   popular?: boolean;
+}
+
+function normalizePlan(raw: PlanRaw): Plan {
+  const storageBytes = raw.max_storage_bytes || 0;
+  return {
+    id: raw.id,
+    name: raw.name,
+    slug: raw.slug,
+    price: raw.price_monthly ?? raw.price ?? 0,
+    bots_limit: raw.max_bots ?? raw.bots_limit ?? 0,
+    messages_limit: raw.max_messages_month ?? raw.messages_limit ?? 0,
+    tokens_limit: raw.max_tokens_month ?? raw.tokens_limit ?? 0,
+    storage_gb: raw.storage_limit ?? (storageBytes > 0 ? Math.round(storageBytes / (1024 * 1024 * 1024)) : 0),
+    features: raw.features || [],
+    popular: raw.popular || raw.slug === 'pro' || raw.slug === 'professional',
+  };
 }
 
 function SkeletonLoader() {
@@ -44,72 +80,8 @@ export default function PlansManagement() {
 
   const [editingPlan, setEditingPlan] = useState<string | null>(null);
 
-  const plans: Plan[] = plansData?.plans || [
-    {
-      id: '1',
-      name: 'Free',
-      slug: 'free',
-      price: 0,
-      bots_limit: 1,
-      messages_limit: 1000,
-      tokens_limit: 10000,
-      storage_limit: 1,
-      features: ['1 Bot', 'Base de conhecimento limitada', 'Suporte por email'],
-    },
-    {
-      id: '2',
-      name: 'Starter',
-      slug: 'starter',
-      price: 99,
-      bots_limit: 3,
-      messages_limit: 10000,
-      tokens_limit: 100000,
-      storage_limit: 10,
-      features: [
-        '3 Bots',
-        'Base de conhecimento completa',
-        'Webhooks',
-        'Suporte prioritário',
-      ],
-    },
-    {
-      id: '3',
-      name: 'Pro',
-      slug: 'pro',
-      price: 299,
-      bots_limit: 10,
-      messages_limit: 100000,
-      tokens_limit: 500000,
-      storage_limit: 50,
-      features: [
-        '10 Bots',
-        'Base de conhecimento ilimitada',
-        'Webhooks',
-        'API customizada',
-        'Suporte 24/7',
-      ],
-      popular: true,
-    },
-    {
-      id: '4',
-      name: 'Enterprise',
-      slug: 'enterprise',
-      price: 999,
-      bots_limit: -1,
-      messages_limit: -1,
-      tokens_limit: -1,
-      storage_limit: -1,
-      features: [
-        'Bots ilimitados',
-        'Mensagens ilimitadas',
-        'Tokens ilimitados',
-        'Storage ilimitado',
-        'SLA garantido',
-        'Onboarding dedicado',
-        'Suporte dedicado',
-      ],
-    },
-  ];
+  const rawPlans: PlanRaw[] = plansData?.plans || [];
+  const plans: Plan[] = rawPlans.map(normalizePlan);
 
   if (loading) {
     return <SkeletonLoader />;
@@ -193,9 +165,9 @@ export default function PlansManagement() {
                 <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                   <Users size={16} className="text-[#D4A843]" />
                   <span>
-                    {plan.storage_limit === -1
+                    {plan.storage_gb === -1
                       ? 'Storage ilimitado'
-                      : `${plan.storage_limit}GB storage`}
+                      : `${plan.storage_gb}GB storage`}
                   </span>
                 </div>
               </div>
@@ -250,7 +222,7 @@ export default function PlansManagement() {
                 </label>
                 <input
                   type="number"
-                  defaultValue={plans.find((p) => p.id === editingPlan)?.price}
+                  defaultValue={plans.find((p) => p.id === editingPlan)?.price || 0}
                   className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-[#D4A843] transition-colors"
                 />
               </div>
